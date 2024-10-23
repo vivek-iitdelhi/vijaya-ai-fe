@@ -1,0 +1,135 @@
+/* Body styles */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Poppins', sans-serif;
+  background: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-size: cover;
+}
+
+/* Container for the login/signup form */
+.auth-form-container {
+  background-color: #000; /* Set background to black */
+  padding: 3rem 2.5rem;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  width: 400px;
+  text-align: center;
+  backdrop-filter: blur(10px);
+}
+
+/* Form title (Log In or Sign Up) */
+.auth-form-container h2 {
+  font-size: 2.2rem;
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+  color: #fff; /* Text color set to white */
+}
+
+/* Input fields */
+.auth-form-container input[type="email"],
+.auth-form-container input[type="password"],
+.auth-form-container input[type="text"] {
+  width: 100%;
+  padding: 0.8rem;
+  border: none;
+  outline: none;
+  border-radius: 30px;
+  margin-bottom: 1rem;
+  background-color: rgba(255, 255, 255, 0.9); /* Visible input background */
+  color: #000; /* Black text color inside input fields */
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.auth-form-container input[type="email"]:focus,
+.auth-form-container input[type="password"]:focus,
+.auth-form-container input[type="text"]:focus {
+  background-color: rgba(255, 255, 255, 1);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
+}
+
+/* Label styles */
+.auth-form-container label {
+  font-size: 0.9rem;
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #fff; /* Label text set to white */
+  font-weight: 500;
+  text-align: left;
+}
+
+/* Error message styling */
+.error-message {
+  color: #ff3f6c;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+/* Submit button */
+.auth-form-container button[type="submit"] {
+  width: 100%;
+  background: linear-gradient(135deg, #ff3f6c, #d12e52);
+  color: #fff;
+  padding: 0.8rem 0;
+  border: none;
+  border-radius: 30px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 10px 20px rgba(255, 63, 108, 0.3);
+}
+
+.auth-form-container button[type="submit"]:hover {
+  background: linear-gradient(135deg, #d12e52, #a80044);
+  transform: translateY(-3px);
+  box-shadow: 0 15px 30px rgba(255, 63, 108, 0.5);
+}
+
+/* Toggle button for switching between login and signup */
+.auth-form-container .toggle-button {
+  background-color: transparent;
+  color: #fff; /* Text set to white */
+  font-size: 0.95rem;
+  border: none;
+  cursor: pointer;
+  transition: color 0.3s ease;
+  margin-top: 1.5rem;
+}
+
+.auth-form-container .toggle-button:hover {
+  color: #ff3f6c; /* Text changes to accent color on hover */
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .auth-form-container {
+    width: 90%;
+    padding: 2.5rem 1.5rem;
+  }
+
+  .auth-form-container h2 {
+    font-size: 1.8rem;
+  }
+
+  .auth-form-container input[type="email"],
+  .auth-form-container input[type="password"],
+  .auth-form-container input[type="text"] {
+    font-size: 0.9rem;
+    padding: 0.7rem;
+  }
+
+  .auth-form-container button[type="submit"] {
+    font-size: 1rem;
+  }
+
+  .auth-form-container .toggle-button {
+    font-size: 0.85rem;
+  }
+}
