@@ -1,5 +1,5 @@
 
-export const About = () =>{
+const About = () =>{
     return (
         <div style={{ margin: '20px' }}>
             <div>Lorem ipsum dolor sit amet consectetur adipisicing elit. Cumque enim dicta, facere illum perferendis minus quos et voluptatibus, non libero quis sequi nesciunt. Tempore nulla totam qui corporis expedita, unde commodi laborum inventore assumenda dolore magni, quo iure doloribus? Dolore odio aliquam deserunt eveniet eaque.</div>
@@ -92,3 +92,4 @@ export const About = () =>{
         </div>
     )
 }
+export default About

@@ -1,7 +1,7 @@
 
 import "./Home.css"
 
-export const Home = () => {
+const Home = () => {
     return (
       <div className="home-container">
         <div className="upper-div">
@@ -151,3 +151,4 @@ export const Home = () => {
       </div>
     );
   };
+  export default Home
