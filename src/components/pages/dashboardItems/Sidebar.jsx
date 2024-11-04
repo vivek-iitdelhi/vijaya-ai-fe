@@ -13,10 +13,10 @@ import ListItemText from '@mui/material/ListItemText';
 import MenuIcon from '@mui/icons-material/Menu';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
-import {FineTuning} from './sidebarItems/FineTuning'
-import { RAG } from './sidebarItems/Rag';
-import { Tools } from './sidebarItems/Tools';
-import { DBConnection } from './sidebarItems/DbConnection';
+import FineTuning from './sidebarItems/FineTuning'
+import  RAG  from './sidebarItems/Rag';
+import  Tools  from './sidebarItems/Tools';
+import  DBConnection  from './sidebarItems/DbConnection';
 
 const drawerWidth = 240;
 

@@ -1,11 +1,11 @@
 import { Route, Routes } from "react-router-dom"
 import "./App.css"
 import Navbar from "./components/Navbar"
-import { Home } from "./components/pages/Home"
-import { About } from "./components/pages/About"
-import { Dashboard } from "./components/pages/Dashboard"
-import { ContactUs } from "./components/pages/ContactUs"
-import { LogIn } from "./components/pages/LogIn"
+import Home  from "./components/pages/Home"
+import About  from "./components/pages/About"
+import Dashboard from "./components/pages/Dashboard"
+import  ContactUs  from "./components/pages/ContactUs"
+import  LogIn  from "./components/pages/LogIn"
 import DatasetManager from "./components/pages/dashboardItems/sidebarItems/Manage/DatasetManager"
 
 function App() {

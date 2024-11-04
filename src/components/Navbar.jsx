@@ -20,26 +20,16 @@ const Navbar = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   // State to track authentication status
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('authToken'));
 
-  // Function to check for token in localStorage
-  const checkAuthentication = () => {
-    const token = localStorage.getItem('authToken');
-    return !!token; // Return true if token exists
-  };
-
-  // Set the initial authentication state when component mounts
-  useEffect(() => {
-    setIsAuthenticated(checkAuthentication());
-  }, []);
-
+  // Function to toggle drawer
   const handleDrawerToggle = () => {
     setMenuOpen(!menuOpen);
   };
 
   // Function to open the dashboard in a new tab
   const openDashboardInNewTab = () => {
-    window.open('/dashboard', '_blank'); // Opens dashboard in a new tab
+    window.open('/dashboard', '_blank');
   };
 
   // Handle Logout
@@ -47,8 +37,20 @@ const Navbar = () => {
     localStorage.removeItem('authToken');
     localStorage.removeItem('username');
     setIsAuthenticated(false); // Update authentication state
-    window.location.reload();  // Reload the page to reflect changes
   };
+
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setIsAuthenticated(!!localStorage.getItem('authToken'));
+    };
+
+    // Listen for changes in localStorage (e.g., when token is set)
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
 
   const drawer = (
     <Box
@@ -64,11 +66,20 @@ const Navbar = () => {
       onClick={handleDrawerToggle}
     >
       <List>
-        <ListItem button onClick={openDashboardInNewTab} sx={{ padding: '1rem', color: '#fff', '&:hover': { backgroundColor: '#555' } }}>
-          <ListItemText primary="Dashboard" />
+        <ListItem
+          button
+          onClick={isAuthenticated ? handleLogout : openDashboardInNewTab}
+          sx={{ padding: '1rem', color: '#fff', '&:hover': { backgroundColor: '#555' } }}
+        >
+          <ListItemText primary={isAuthenticated ? "Logout" : "Dashboard"} />
         </ListItem>
         {!isAuthenticated && (
-          <ListItem button component={NavLink} to="/login" sx={{ padding: '1rem', color: '#fff', '&:hover': { backgroundColor: '#555' } }}>
+          <ListItem
+            button
+            component={NavLink}
+            to="/login"
+            sx={{ padding: '1rem', color: '#fff', '&:hover': { backgroundColor: '#555' } }}
+          >
             <ListItemText primary="Log In" />
           </ListItem>
         )}
@@ -101,51 +112,66 @@ const Navbar = () => {
       >
         <Toolbar>
           {isMobile && (
-            <IconButton
-              edge="start"
-              color="inherit"
-              aria-label="menu"
-              onClick={handleDrawerToggle}
-              sx={{ mr: 2 }}
-            >
+            <IconButton edge="start" color="inherit" aria-label="menu" onClick={handleDrawerToggle} sx={{ mr: 2 }}>
               <MenuIcon />
             </IconButton>
           )}
           <Typography
-            variant="h6"
-            component={Link}
-            to="/"
-            sx={{
-              flexGrow: 1,
-              textDecoration: 'none',
-              color: '#fff',
-              fontWeight: 700,
-              letterSpacing: '1px',
-              fontSize: '1.8rem',
-              transition: 'color 0.3s ease',
-              '&:hover': { color: '#ffd700' }
+              variant="h6"
+              component="a"
+              href="https://www.vijaya.ai/"
+              target="_blank"
+              rel="noopener noreferrer"
+              sx={{
+                flexGrow: 1,
+                textDecoration: 'none',
+                color: '#fff',
+                fontWeight: 700,
+                letterSpacing: '1px',
+                fontSize: '1.8rem',
+                transition: 'color 0.3s ease',
+                '&:hover': { color: '#ffd700' },
             }}
           >
             Vijaya AI
           </Typography>
           {!isMobile && (
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <Button
-                color="inherit"
-                onClick={openDashboardInNewTab}
-                sx={{
-                  mx: 1,
-                  fontWeight: 600,
-                  fontSize: '1rem',
-                  transition: 'color 0.3s ease, background 0.3s ease',
-                  '&:hover': {
-                    color: '#6a00f4',
-                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                  },
-                }}
-              >
-                Dashboard
-              </Button>
+              {isAuthenticated ? (
+                <Button
+                  color="inherit"
+                  onClick={handleLogout}
+                  sx={{
+                    mx: 1,
+                    fontWeight: 600,
+                    fontSize: '1rem',
+                    transition: 'color 0.3s ease, background 0.3s ease',
+                    '&:hover': {
+                      color: '#6a00f4',
+                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    },
+                  }}
+                >
+                  Logout
+                </Button>
+              ) : (
+                <Button
+                  color="inherit"
+                  onClick={openDashboardInNewTab}
+                  sx={{
+                    mx: 1,
+                    fontWeight: 600,
+                    fontSize: '1rem',
+                    transition: 'color 0.3s ease, background 0.3s ease',
+                    '&:hover': {
+                      color: '#6a00f4',
+                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    },
+                  }}
+                >
+                  Dashboard
+                </Button>
+              )}
               <Button
                 color="inherit"
                 component={NavLink}
@@ -180,54 +206,6 @@ const Navbar = () => {
               >
                 Contact Us
               </Button>
-              {isAuthenticated ? (
-                <>
-                  <Typography
-                    variant="body1"
-                    sx={{
-                      mx: 1,
-                      color: '#fff',
-                      fontWeight: 600,
-                      fontSize: '1rem',
-                    }}
-                  >
-                  </Typography>
-                  <Button
-                    color="inherit"
-                    onClick={handleLogout}
-                    sx={{
-                      mx: 1,
-                      fontWeight: 600,
-                      fontSize: '1rem',
-                      transition: 'color 0.3s ease, background 0.3s ease',
-                      '&:hover': {
-                        color: '#6a00f4',
-                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                      },
-                    }}
-                  >
-                    Logout
-                  </Button>
-                </>
-              ) : (
-                <Button
-                  color="inherit"
-                  component={NavLink}
-                  to="/login"
-                  sx={{
-                    mx: 1,
-                    fontWeight: 600,
-                    fontSize: '1rem',
-                    transition: 'color 0.3s ease, background 0.3s ease',
-                    '&:hover': {
-                      color: '#6a00f4',
-                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                    },
-                  }}
-                >
-                  Log In
-                </Button>
-              )}
             </Box>
           )}
         </Toolbar>

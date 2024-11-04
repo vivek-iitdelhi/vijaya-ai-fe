@@ -18,7 +18,7 @@ import { Delete as DeleteIcon, Add as AddIcon, UploadFile as UploadFileIcon } fr
 import axios from 'axios';
 import { useParams } from 'react-router-dom'; // To capture the project_id from the URL
 
-const API_BASE_URL = "http://34.131.93.240:8000/api/datasets/";
+const API_BASE_URL = " https://rare-gazelle-strong.ngrok-free.app/api/datasets/";
 const getToken = () => localStorage.getItem('authToken');
 
 // Function to check file extension
@@ -44,6 +44,7 @@ const DatasetContent = () => {
       const response = await axios.get(`${API_BASE_URL}?project_id=${project_id}`, {
         headers: {
           Authorization: `Token ${token}`,
+          "ngrok-skip-browser-warning": "69420"
         },
       });
       setDatasets(response.data);

@@ -13,10 +13,10 @@ import {
   CardActions,
   Typography,
 } from '@mui/material';
-import { useNavigate } from 'react-router-dom'; // Import the useNavigate hook
+import { useNavigate } from 'react-router-dom';
 
-const API_BASE_URL = "http://34.131.93.240:8000/api/projects/";
-const DATASET_API_URL = "http://34.131.93.240:8000/api/datasets/"
+const API_BASE_URL = "https://rare-gazelle-strong.ngrok-free.app/api/projects/";
+const DATASET_API_URL = "https://rare-gazelle-strong.ngrok-free.app/api/datasets/";
 
 const getToken = () => {
   return localStorage.getItem('authToken');
@@ -24,32 +24,43 @@ const getToken = () => {
 
 const fetchProjects = async () => {
   const token = getToken();
-  const projectResponse = await axios.get(API_BASE_URL, {
-    headers: {
-      Authorization: `Token ${token}`,
-    },
-  });
-  
-  const projects = projectResponse.data;
+  try {
+    const projectResponse = await axios.get(API_BASE_URL, {
+      headers: {
+        Authorization: `Token ${token}`,
+        "ngrok-skip-browser-warning": "69420"
+      },
+    });
 
-  // Fetch datasets for each project and append the dataset count
-  const projectsWithDatasetCount = await Promise.all(
-    projects.map(async (project) => {
-      const datasetResponse = await axios.get(`${DATASET_API_URL}?project_id=${project.project_id}`, {
-        headers: {
-          Authorization: `Token ${token}`,
-        },
-      });
-      return {
-        ...project,
-        datasetCount: datasetResponse.data.length, // Count of datasets
-        trainingJobs: 0, // Dummy value for now
-        services: 0, // Dummy value for now
-      };
-    })
-  );
+    const projects = projectResponse.data;
 
-  return projectsWithDatasetCount;
+    // Ensure the response is an array
+    if (!Array.isArray(projects)) {
+      throw new Error('Expected an array of projects');
+    }
+
+    // Fetch datasets for each project and append the dataset count
+    const projectsWithDatasetCount = await Promise.all(
+      projects.map(async (project) => {
+        const datasetResponse = await axios.get(`${DATASET_API_URL}?project_id=${project.project_id}`, {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        });
+        return {
+          ...project,
+          datasetCount: datasetResponse.data.length, // Count of datasets
+          trainingJobs: 0, // Dummy value for now
+          services: 0, // Dummy value for now
+        };
+      })
+    );
+
+    return projectsWithDatasetCount;
+  } catch (error) {
+    console.error('Error fetching projects:', error);
+    return []; // Return an empty array on error
+  }
 };
 
 const addProject = async (projectData) => {
@@ -77,7 +88,7 @@ export default function ProjectDetailPage() {
   const [newProject, setNewProject] = useState({ project_name: '', description: '' });
   const [openModal, setOpenModal] = useState(false);
 
-  const navigate = useNavigate(); // Initialize useNavigate
+  const navigate = useNavigate();
 
   useEffect(() => {
     async function loadProjects() {
@@ -110,7 +121,7 @@ export default function ProjectDetailPage() {
   }
 
   return (
-    <div style={{ margin: '0 13rem', paddingBottom: '850px' }}>
+    <div style={{ margin: '0 19rem', paddingBottom: '500px' }}>
       <Button variant="contained" color="primary" onClick={() => setOpenModal(true)} style={{ marginBottom: '20px' }}>
         Create New Project
       </Button>
@@ -164,8 +175,8 @@ export default function ProjectDetailPage() {
               transition: 'transform 0.3s ease, box-shadow 0.3s ease',
               height: '350px',
               width: '300px',
-              borderRadius: '12px', // Rounded corners
-              boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)', // Subtle shadow for better depth
+              borderRadius: '12px',
+              boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)',
               '&:hover': {
                 transform: 'translateY(-5px)',
                 boxShadow: '0 4px 15px rgba(255, 255, 0, 0.5)',
@@ -173,34 +184,28 @@ export default function ProjectDetailPage() {
             }}
           >
             <CardContent sx={{ padding: '0' }}>
-              {/* Project Name Section */}
               <div style={{ backgroundColor: '#1565C0', padding: '16px', borderRadius: '8px 8px 0 0', marginBottom: '8px' }}>
                 <Typography variant="h6" component="div" gutterBottom style={{ fontWeight: 'bold' }}>
                   {project.project_name}
                 </Typography>
               </div>
-
-              {/* Project Description */}
               <div style={{ backgroundColor: '#1976D2', padding: '12px', borderRadius: '8px', marginBottom: '12px', boxShadow: 'inset 0px 0px 5px rgba(0, 0, 0, 0.1)' }}>
                 <Typography variant="body2" color="#fff">
                   {project.description}
                 </Typography>
               </div>
-
-              {/* Stats Section (Datasets, Training Jobs, Services) */}
               <div style={{ backgroundColor: '#1E88E5', padding: '12px', borderRadius: '8px', marginBottom: '12px' }}>
                 <Typography variant="body1" color="#fff" style={{ marginBottom: '4px' }}>
                   Datasets: <strong>{project.datasetCount}</strong>
                 </Typography>
                 <Typography variant="body1" color="#fff" style={{ marginBottom: '4px' }}>
-                  Training Jobs: <strong>{project.trainingJobs}</strong> {/* Dummy value */}
+                  Training Jobs: <strong>{project.trainingJobs}</strong>
                 </Typography>
                 <Typography variant="body1" color="#fff">
-                  Services: <strong>{project.services}</strong> {/* Dummy value */}
+                  Services: <strong>{project.services}</strong>
                 </Typography>
               </div>
             </CardContent>
-
             <CardActions sx={{ justifyContent: 'space-between' }}>
               <Button
                 onClick={() => handleManageProject(project.project_id)}
@@ -240,3 +245,4 @@ export default function ProjectDetailPage() {
     </div>
   );
 }
+   

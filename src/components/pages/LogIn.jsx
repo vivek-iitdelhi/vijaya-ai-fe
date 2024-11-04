@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./LogIn.css";
+import { colors } from "@mui/material";
 
-export const LogIn = () => {
+const LogIn = ({ onSuccess }) => {
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
     email: '',
@@ -20,14 +21,15 @@ export const LogIn = () => {
   async function handleSubmit(e) {
     e.preventDefault();
     const url = isLogin
-      ? `http://34.131.93.240:8000/api/login/`
-      : "http://34.131.93.240:8000/api/register/";
+      ? `https://rare-gazelle-strong.ngrok-free.app/api/login/`
+      : "https://rare-gazelle-strong.ngrok-free.app/api/register/";
 
     try {
       const response = await fetch(url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "ngrok-skip-browser-warning": "69420"
         },
         body: JSON.stringify({
           username: isLogin ? undefined : formData.username,
@@ -43,7 +45,8 @@ export const LogIn = () => {
           localStorage.setItem("authToken", data.token);
           localStorage.setItem("username", formData.username); // Save username
           setErrorMessage('');
-          navigate("/");
+          onSuccess(); // Trigger modal close on success
+          navigate("/dashboard");
         } else {
           console.log("Registration Success:", data);
           setIsLogin(true);
@@ -60,7 +63,7 @@ export const LogIn = () => {
 
   return (
     <div className="auth-form-container">
-      <h1>Welcome!</h1>
+      <h1 color="">Welcome!</h1>
       <h2>{isLogin ? 'Log In' : 'Sign Up'}</h2>
       {errorMessage && <p className="error-message">{errorMessage}</p>}
       <form onSubmit={handleSubmit}>
@@ -107,3 +110,5 @@ export const LogIn = () => {
     </div>
   );
 };
+
+export default LogIn;

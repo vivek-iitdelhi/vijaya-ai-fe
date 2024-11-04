@@ -19,7 +19,7 @@ const socialLinksStyle = {
   marginTop: '10px',
 };
 
-export const ContactUs = () =>{
+const ContactUs = () =>{
     return (
       <div>
         <div style={{ display: 'flex', gap: '1rem', fontSize: '2rem', background:"cover" }}>
@@ -56,3 +56,5 @@ const footerStyle = {
   width: '100%',
   bottom: '0',
 };
+
+export default ContactUs
