@@ -4,9 +4,14 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [react()],
   build: {
+    lib: {
+      entry: 'src/main.jsx', // Use main.jsx as the entry point
+      name: 'VijayaFrontend', // Global variable name for UMD build
+      formats: ['es', 'cjs', 'umd'], // Output formats for compatibility
+      fileName: (format) => `vijaya-frontend.${format}.js`, // Output filenames
+    },
     rollupOptions: {
-      // Leave this section only if you have specific external dependencies
-      external: ['react', 'react-dom'],
+      external: ['react', 'react-dom'], // Externalize dependencies
       output: {
         globals: {
           react: 'React',

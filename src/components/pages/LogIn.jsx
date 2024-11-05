@@ -21,8 +21,8 @@ const LogIn = ({ onSuccess }) => {
   async function handleSubmit(e) {
     e.preventDefault();
     const url = isLogin
-      ? `https://rare-gazelle-strong.ngrok-free.app/api/login/`
-      : "https://rare-gazelle-strong.ngrok-free.app/api/register/";
+      ? `${import.meta.env.VITE_HOST_URL}/login/`
+      : `${import.meta.env.VITE_HOST_URL}/register/`;
 
     try {
       const response = await fetch(url, {

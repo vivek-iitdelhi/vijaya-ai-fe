@@ -23,10 +23,9 @@ import SearchIcon from '@mui/icons-material/Search';
 import { useParams } from 'react-router-dom'; // Import useParams
 
 const getToken = () => localStorage.getItem('authToken');
-const Hostname = ' https://rare-gazelle-strong.ngrok-free.app/api';
-const API_BASE_URL = `${Hostname}/basemodels/`;
-const API_TRAINING_JOBS_URL = `${Hostname}/trainingjobs/`;
-const API_DATASETS_URL = `${Hostname}/datasets/`;
+const API_BASE_URL = `${import.meta.env.VITE_HOST_URL}/basemodels/`;
+const API_TRAINING_JOBS_URL = `${import.meta.env.VITE_HOST_URL}/trainingjobs/`;
+const API_DATASETS_URL = `${import.meta.env.VITE_HOST_URL}/datasets/`;
 
 export default function TrainingJobs() {
   const { project_id } = useParams(); // Get project_id from URL params
@@ -62,6 +61,7 @@ export default function TrainingJobs() {
         const response = await axios.get(`${API_TRAINING_JOBS_URL}?project_id=${project_id}`, {
           headers: {
             Authorization: `Token ${token}`,
+            "ngrok-skip-browser-warning": "69420"
           },
         });
         console.log('Training Jobs:', response.data); // Log the response to check the data
@@ -77,6 +77,7 @@ export default function TrainingJobs() {
         const response = await axios.get(`${API_DATASETS_URL}?project_id=${project_id}`, {
           headers: {
             Authorization: `Token ${token}`,
+            "ngrok-skip-browser-warning": "69420"
           },
         });
         setDatasets(response.data);

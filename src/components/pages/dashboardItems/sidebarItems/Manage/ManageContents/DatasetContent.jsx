@@ -18,7 +18,7 @@ import { Delete as DeleteIcon, Add as AddIcon, UploadFile as UploadFileIcon } fr
 import axios from 'axios';
 import { useParams } from 'react-router-dom'; // To capture the project_id from the URL
 
-const API_BASE_URL = " https://rare-gazelle-strong.ngrok-free.app/api/datasets/";
+const API_BASE_URL = `${import.meta.env.VITE_HOST_URL}/datasets/`;
 const getToken = () => localStorage.getItem('authToken');
 
 // Function to check file extension
