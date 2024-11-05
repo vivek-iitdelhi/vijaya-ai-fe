@@ -23,7 +23,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import { useParams } from 'react-router-dom'; // Import useParams
 
 const getToken = () => localStorage.getItem('authToken');
-const Hostname = 'http://34.131.93.240:8000/api';
+const Hostname = ' https://rare-gazelle-strong.ngrok-free.app/api';
 const API_BASE_URL = `${Hostname}/basemodels/`;
 const API_TRAINING_JOBS_URL = `${Hostname}/trainingjobs/`;
 const API_DATASETS_URL = `${Hostname}/datasets/`;
@@ -47,6 +47,7 @@ export default function TrainingJobs() {
         const response = await axios.get(API_BASE_URL, {
           headers: {
             Authorization: `Token ${token}`,
+            "ngrok-skip-browser-warning": "69420"
           },
         });
         setBaseModels(response.data);

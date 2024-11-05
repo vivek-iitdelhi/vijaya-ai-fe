@@ -15,7 +15,7 @@ const dummyData = [
   { id: 10, name: 'Card 10', description: 'Description of Card 10' },
 ];
 
-export const RAG = () => {
+const RAG = () => {
   const [files, setFiles] = useState({});
 
   const handleFileChange = (event, cardId) => {
@@ -66,3 +66,5 @@ export const RAG = () => {
     </Box>
   );
 };
+
+export default RAG;
