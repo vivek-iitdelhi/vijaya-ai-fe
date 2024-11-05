@@ -16,7 +16,7 @@ function App() {
      <Navbar/>
      <Routes>
       <Route path="/manage/:project_id" element={<DatasetManager />} />
-      <Route path="/" element={<Home/>}/>
+      <Route path="/" element={<Dashboard/>}/>
       <Route path="/about" element={<About/>}/>
       <Route path="/dashboard" element={<Dashboard/>}/>
       <Route path="/contactus" element={<ContactUs/>}/>
