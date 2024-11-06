@@ -32,9 +32,7 @@ const Dashboard = () => {
                     <div className="col-auto">
                         <Sidebar />
                     </div>
-                    <div>
-                        {/* Other dashboard components go here */}
-                    </div>
+
                 </div>
             ) : null}
 

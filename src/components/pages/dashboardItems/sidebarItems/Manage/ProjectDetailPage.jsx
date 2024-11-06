@@ -12,6 +12,7 @@ import {
   CardContent,
   CardActions,
   Typography,
+  Box,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 
@@ -34,12 +35,10 @@ const fetchProjects = async () => {
 
     const projects = projectResponse.data;
 
-    // Ensure the response is an array
     if (!Array.isArray(projects)) {
       throw new Error('Expected an array of projects');
     }
 
-    // Fetch datasets for each project and append the dataset count
     const projectsWithDatasetCount = await Promise.all(
       projects.map(async (project) => {
         const datasetResponse = await axios.get(`${DATASET_API_URL}?project_id=${project.project_id}`, {
@@ -49,9 +48,9 @@ const fetchProjects = async () => {
         });
         return {
           ...project,
-          datasetCount: datasetResponse.data.length, // Count of datasets
-          trainingJobs: 0, // Dummy value for now
-          services: 0, // Dummy value for now
+          datasetCount: datasetResponse.data.length,
+          trainingJobs: 0,
+          services: 0,
         };
       })
     );
@@ -59,7 +58,7 @@ const fetchProjects = async () => {
     return projectsWithDatasetCount;
   } catch (error) {
     console.error('Error fetching projects:', error);
-    return []; // Return an empty array on error
+    return [];
   }
 };
 
@@ -108,7 +107,7 @@ export default function ProjectDetailPage() {
   };
 
   const handleManageProject = (project_id) => {
-    navigate(`/manage/${project_id}`); // Navigate to the DatasetManager with project_id
+    navigate(`/manage/${project_id}`);
   };
 
   const handleDeleteProject = async (project_id) => {
@@ -121,10 +120,15 @@ export default function ProjectDetailPage() {
   }
 
   return (
-    <div style={{ margin: '0 19rem', paddingBottom: '500px' }}>
-      <Button variant="contained" color="primary" onClick={() => setOpenModal(true)} style={{ marginBottom: '20px' }}>
-        Create New Project
-      </Button>
+    <div style={{ paddingTop: '130px', paddingBottom: '500px', overflow: 'auto' }}>
+      <Box display="flex" justifyContent="space-between" alignItems="center" marginBottom="20px">
+        <Typography variant="h4" component="h1">
+          My Projects
+        </Typography>
+        <Button variant="contained" color="primary" onClick={() => setOpenModal(true)}>
+          Create New Project
+        </Button>
+      </Box>
 
       <Dialog open={openModal} onClose={() => setOpenModal(false)}>
         <DialogTitle>Add New Project</DialogTitle>
@@ -159,7 +163,20 @@ export default function ProjectDetailPage() {
         </DialogActions>
       </Dialog>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '20px' }}>
+      <Box
+        display="grid"
+        gridTemplateColumns="repeat(4, 1fr)"
+        gap="20px"
+        sx={{
+          position: 'sticky',
+          top: '80px', // Adjust based on the navbar height
+          maxHeight: '900px', // Set the max height
+          overflowY: 'auto', // Enable scrolling within the grid container
+          padding: '25px',
+          backgroundColor: '#ffffff',
+          borderRadius: '8px',
+        }}
+      >
         {projects.map((project) => (
           <Card
             key={project.project_id}
@@ -241,8 +258,7 @@ export default function ProjectDetailPage() {
             </CardActions>
           </Card>
         ))}
-      </div>
+      </Box>
     </div>
   );
 }
-   

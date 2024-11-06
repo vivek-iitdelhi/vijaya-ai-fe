@@ -33,36 +33,34 @@ const ServicesContent = () => {
   return (
     <Box
       sx={{
-        width: '100vw',
-        height: '100vh',
         display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center', // Center vertically
-        alignItems: 'center', // Center horizontally
+        justifyContent: 'center', // Center horizontally
+        alignItems: 'flex-start', // Align to the top to avoid unnecessary space
+        minHeight: '100vh', // Ensure the container takes full viewport height
         backgroundColor: '#f0f0f0', // Background color for the whole page
-        padding: '20px', // Adds padding around the entire view
+        padding: 0, // Remove padding to eliminate excess space
       }}
     >
-      {/* Main Content Box with enhanced styling */}
+      {/* Main Content Box with improved styling */}
       <Box
         sx={{
-          width: '85vw', // Adjust width to be responsive and centered
-          height: '85vh', // Maintain relative height
+          width: '90vw', // Responsive width for the container
+          height: '90vh', // Responsive height for the container
           backgroundColor: '#fff', // Keeps content background clean and white
-          borderRadius: '16px', // Slightly more rounded corners for modern look
-          boxShadow: '0px 6px 16px rgba(0, 0, 0, 0.1)', // Larger shadow for depth
-          overflow: 'hidden', // Ensures content stays inside rounded corners
+          borderRadius: '16px', // Rounded corners for modern look
+          boxShadow: '0px 6px 16px rgba(0, 0, 0, 0.1)', // Subtle shadow for depth
+          overflow: 'hidden', // Ensure content stays inside rounded corners
           display: 'flex',
           flexDirection: 'column',
         }}
       >
-        {/* Tabs Header with better spacing */}
+        {/* Tabs Header with minimal spacing */}
         <Box
           sx={{
             width: '100%',
-            backgroundColor: '#f8f9fa', // Slightly lighter background for the header
-            padding: '10px 20px', // Adds padding for a cleaner look
-            borderBottom: '2px solid #e0e0e0', // Slightly thicker border for separation
+            backgroundColor: '#f8f9fa', // Light background for the header
+            padding: '10px 20px', // Padding for clean appearance
+            borderBottom: '2px solid #e0e0e0', // Border for separation
             position: 'sticky', // Make the tabs sticky
             top: 0, // Stick to the top of the parent container
             zIndex: 1, // Ensure the tabs are on top
@@ -88,28 +86,16 @@ const ServicesContent = () => {
             <Tab label="Monitoring" />
           </Tabs>
         </Box>
-
-        {/* Tab Content with modern spacing */}
         <Box
           sx={{
             flexGrow: 1, // Fills the remaining space below the tabs
-            padding: '30px', // Increased padding for better spacing
+            padding: '16px', // Reduce padding for a more compact layout
             backgroundColor: '#f7f7f7', // Neutral background to make the content stand out
             borderRadius: '0 0 16px 16px', // Rounded corners on bottom for seamless look
-            overflow: 'hidden', // Prevents outer scrollbar
-            display: 'flex',
-            flexDirection: 'column',
+            overflow: 'auto', // Allow inner content to scroll if necessary
           }}
         >
-          <Box
-            sx={{
-              flexGrow: 1, // Allows this box to take the remaining space
-              maxHeight: '100%', // Use maxHeight to limit overflow
-              overflowY: 'auto', // Allow inner content to scroll if necessary
-            }}
-          >
-            {renderContent()}
-          </Box>
+          {renderContent()}
         </Box>
       </Box>
     </Box>
