@@ -20,7 +20,7 @@ import {
   Select,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
-import { useParams } from 'react-router-dom'; // Import useParams
+import { useParams } from 'react-router-dom';
 
 const getToken = () => localStorage.getItem('authToken');
 const API_BASE_URL = `${import.meta.env.VITE_HOST_URL}/basemodels/`;
@@ -28,7 +28,7 @@ const API_TRAINING_JOBS_URL = `${import.meta.env.VITE_HOST_URL}/trainingjobs/`;
 const API_DATASETS_URL = `${import.meta.env.VITE_HOST_URL}/datasets/`;
 
 export default function TrainingJobs() {
-  const { project_id } = useParams(); // Get project_id from URL params
+  const { project_id } = useParams();
   const [openModal, setOpenModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [jobs, setJobs] = useState([]);
@@ -64,8 +64,8 @@ export default function TrainingJobs() {
             "ngrok-skip-browser-warning": "69420"
           },
         });
-        console.log('Training Jobs:', response.data); // Log the response to check the data
-        setJobs(response.data); // Set the training jobs based on project_id
+        console.log('Training Jobs:', response.data);
+        setJobs(response.data);
       } catch (error) {
         console.error('Error fetching training jobs:', error);
       }
@@ -89,7 +89,12 @@ export default function TrainingJobs() {
     fetchBaseModels();
     fetchTrainingJobs();
     fetchDatasets();
-  }, [project_id]); // Add project_id as a dependency
+
+    const intervalId = setInterval(fetchTrainingJobs, 30000); // Refresh every 30 seconds
+
+    // Clear the interval when the component is unmounted
+    return () => clearInterval(intervalId);
+  }, [project_id]);
 
   const handleOpenModal = () => setOpenModal(true);
   const handleCloseModal = () => setOpenModal(false);
@@ -108,7 +113,7 @@ export default function TrainingJobs() {
       status: 'pending',
       model_id: baseModel,
       dataset_id: datasetTrain,
-      project_id: project_id, // Use the project_id from params
+      project_id: project_id,
     };
 
     try {
@@ -121,7 +126,6 @@ export default function TrainingJobs() {
 
       setJobs((prevJobs) => [...prevJobs, response.data]);
       handleCloseModal();
-      // Reset form fields
       setJobName('');
       setBaseModel('');
       setDatasetTrain('');
@@ -164,7 +168,7 @@ export default function TrainingJobs() {
             borderRadius: '4px',
           }}
         />
-  
+
         <Button
           variant="contained"
           onClick={handleOpenModal}
@@ -179,7 +183,7 @@ export default function TrainingJobs() {
           Create New Training Job
         </Button>
       </Box>
-  
+
       <TableContainer
         component={Paper}
         sx={{
@@ -212,7 +216,7 @@ export default function TrainingJobs() {
           </TableBody>
         </Table>
       </TableContainer>
-  
+
       <Modal
         open={openModal}
         onClose={handleCloseModal}
@@ -240,7 +244,7 @@ export default function TrainingJobs() {
             value={jobName}
             onChange={(e) => setJobName(e.target.value)}
           />
-  
+
           <FormControl fullWidth margin="normal">
             <InputLabel id="base-model-select-label">Base Model</InputLabel>
             <Select
@@ -257,7 +261,7 @@ export default function TrainingJobs() {
               ))}
             </Select>
           </FormControl>
-  
+
           <FormControl fullWidth margin="normal">
             <InputLabel id="train-dataset-select-label">Training Dataset</InputLabel>
             <Select
@@ -274,7 +278,7 @@ export default function TrainingJobs() {
               ))}
             </Select>
           </FormControl>
-  
+
           <FormControl fullWidth margin="normal">
             <InputLabel id="test-dataset-select-label">Testing Dataset</InputLabel>
             <Select
@@ -291,18 +295,13 @@ export default function TrainingJobs() {
               ))}
             </Select>
           </FormControl>
-  
+
           <Button
             variant="contained"
+            color="primary"
+            fullWidth
             onClick={handleCreateJob}
-            sx={{
-              marginTop: '20px',
-              backgroundColor: '#3f51b5',
-              color: '#fff',
-              '&:hover': {
-                backgroundColor: '#5a2387',
-              },
-            }}
+            sx={{ marginTop: '20px' }}
           >
             Create Job
           </Button>
