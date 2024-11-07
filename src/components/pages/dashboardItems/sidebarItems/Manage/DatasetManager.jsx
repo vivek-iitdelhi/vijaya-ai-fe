@@ -27,7 +27,7 @@ export default function DatasetManager() {
   };
 
   return (
-    <Box sx={{ padding: '20px' }}> {/* Overall padding */}
+    <Box sx={{ padding: '20px', width:"100rem"}}> {/* Overall padding */}
       <Box 
         sx={{ 
           display: 'flex', 

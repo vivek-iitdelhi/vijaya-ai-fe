@@ -112,7 +112,8 @@ export default function TrainingJobs() {
       training_job_name: jobName,
       status: 'pending',
       model_id: baseModel,
-      dataset_id: datasetTrain,
+      train_dataset_id: datasetTrain,
+      test_dataset_id: datasetTest,   
       project_id: project_id,
     };
 

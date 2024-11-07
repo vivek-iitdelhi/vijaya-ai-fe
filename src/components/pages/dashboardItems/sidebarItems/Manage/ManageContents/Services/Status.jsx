@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 import {
   Button,
   TextField,
@@ -19,23 +20,39 @@ import {
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 
-const baseModels = [
-  { id: 1, name: 'GPT-3' },
-  { id: 2, name: 'LLaMA' },
-  { id: 3, name: 'ChatGPT' },
-  { id: 4, name: 'Claude' },
-  { id: 5, name: 'Bard' },
-  { id: 6, name: 'Davinci' },
-  { id: 7, name: 'Jurassic-1' },
-  { id: 8, name: 'Megatron' },
-  { id: 9, name: 'OPT' },
-  { id: 10, name: 'Bloom' },
-];
+const API_BASE_URL = `${import.meta.env.VITE_HOST_URL}/basemodels/`;
 
 export default function Status() {
   const [selectedModel, setSelectedModel] = useState(null);
   const [deploymentName, setDeploymentName] = useState('');
   const [deployments, setDeployments] = useState([]);
+  const [baseModels, setBaseModels] = useState([]); // State for the base models
+  const [loading, setLoading] = useState(true); // Loading state to handle the fetching state
+
+  // Get the token from local storage or wherever you store it
+  const getToken = () => localStorage.getItem('authToken');
+
+  useEffect(() => {
+    const fetchBaseModels = async () => {
+      try {
+        const token = getToken();
+        const response = await axios.get(API_BASE_URL, {
+          headers: {
+            Authorization: `Token ${token}`,
+            "ngrok-skip-browser-warning": "69420",
+          },
+        });
+        setBaseModels(response.data); // Set the fetched data to state
+        setLoading(false); // Set loading to false once data is fetched
+      } catch (error) {
+        console.error('Error fetching base models:', error);
+        setLoading(false); // Also stop loading on error
+      }
+    };
+  
+    fetchBaseModels(); 
+  }, []);
+  
 
   const handleModelSelect = (model) => {
     setSelectedModel(model);
@@ -91,25 +108,29 @@ export default function Status() {
               padding: '10px',
             }}
           >
-            <List>
-              {baseModels.map((model) => (
-                <ListItem
-                  button
-                  key={model.id}
-                  onClick={() => handleModelSelect(model)}
-                  sx={{
-                    backgroundColor: selectedModel?.id === model.id ? '#90caf9' : '#ffffff',
-                    marginBottom: '10px',
-                    borderRadius: '8px',
-                    '&:hover': {
-                      backgroundColor: '#e3f2fd',
-                    },
-                  }}
-                >
-                  <ListItemText primary={model.name} />
-                </ListItem>
-              ))}
-            </List>
+            {loading ? (
+              <Typography>Loading base models...</Typography>
+            ) : (
+              <List>
+                {baseModels.map((model) => (
+                 <ListItem
+                 button={true} // Explicitly pass a boolean value if needed
+                 key={model.id}
+                 onClick={() => handleModelSelect(model)}
+                 sx={{
+                   backgroundColor: selectedModel?.id === model.id ? '#90caf9' : '#ffffff',
+                   marginBottom: '10px',
+                   borderRadius: '8px',
+                   '&:hover': {
+                     backgroundColor: '#e3f2fd',
+                   },
+                 }}
+               >
+                    <ListItemText primary={model.name} />
+                  </ListItem>
+                ))}
+              </List>
+            )}
           </Box>
 
           {/* Deployment Name Input */}

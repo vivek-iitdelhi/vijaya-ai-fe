@@ -120,145 +120,167 @@ export default function ProjectDetailPage() {
   }
 
   return (
-    <div style={{ paddingTop: '130px', paddingBottom: '500px', overflow: 'auto' }}>
-      <Box display="flex" justifyContent="space-between" alignItems="center" marginBottom="20px">
-        <Typography variant="h4" component="h1">
-          My Projects
-        </Typography>
-        <Button variant="contained" color="primary" onClick={() => setOpenModal(true)}>
-          Create New Project
-        </Button>
+    <>
+      {/* Sticky container for header */}
+      <Box sx={{ position: 'sticky', top: 0, zIndex: 1000, backgroundColor: '#f7f7f7',width:'1500px' }}>
+        {/* Main title */}
+        <Box sx={{ padding: '5px 10px', borderBottom: '1px solid #ddd' }}>
+          <Typography variant="h4" component="h1">
+            Project Dashboard
+          </Typography>
+        </Box>
+
+        {/* Sticky header for project section */}
+        <Box 
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            position: 'sticky',
+            top: 0,
+            zIndex: 900,
+            backgroundColor: '#fff',
+            padding: '16px 0',
+            borderBottom: '1px solid #ddd',
+          }}
+        >
+          <Typography variant="h5" component="h2">
+            My Projects
+          </Typography>
+          <Button style={{borderRadius:'1rem'}} variant="contained" color="primary" onClick={() => setOpenModal(true)}>
+            Create New Project
+          </Button>
+        </Box>
       </Box>
 
-      <Dialog open={openModal} onClose={() => setOpenModal(false)}>
-        <DialogTitle>Add New Project</DialogTitle>
-        <DialogContent>
-          <TextField
-            label="Project Name"
-            fullWidth
-            value={newProject.project_name}
-            onChange={(e) => setNewProject({ ...newProject, project_name: e.target.value })}
-            style={{ marginBottom: '10px' }}
-          />
-          <TextField
-            label="Project Description"
-            fullWidth
-            multiline
-            rows={2}
-            value={newProject.description}
-            onChange={(e) => {
-              const value = e.target.value;
-              if (value.length <= 20) {
-                setNewProject({ ...newProject, description: value });
-              }
-            }}
-            inputProps={{ maxLength: 20 }}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenModal(false)}>Cancel</Button>
-          <Button variant="contained" color="primary" onClick={handleAddProject}>
-            Add Project
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      <Box
-        display="grid"
-        gridTemplateColumns="repeat(4, 1fr)"
-        gap="20px"
+      <Box 
         sx={{
-          position: 'sticky',
-          top: '80px', // Adjust based on the navbar height
-          maxHeight: '900px', // Set the max height
-          overflowY: 'auto', // Enable scrolling within the grid container
-          padding: '25px',
-          backgroundColor: '#ffffff',
-          borderRadius: '8px',
+          padding: '16px',
+          height: 'calc(100vh - 180px)', // Adjust height based on header height
+          overflowY: 'auto',
+          backgroundColor: '#fafafa',
         }}
       >
-        {projects.map((project) => (
-          <Card
-            key={project.project_id}
-            variant="outlined"
-            sx={{
-              boxSizing: 'border-box',
-              padding: '16px',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between',
-              backgroundColor: '#2196F3',
-              color: '#fff',
-              transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-              height: '350px',
-              width: '300px',
-              borderRadius: '12px',
-              boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)',
-              '&:hover': {
-                transform: 'translateY(-5px)',
-                boxShadow: '0 4px 15px rgba(255, 255, 0, 0.5)',
-              },
-            }}
-          >
-            <CardContent sx={{ padding: '0' }}>
-              <div style={{ backgroundColor: '#1565C0', padding: '16px', borderRadius: '8px 8px 0 0', marginBottom: '8px' }}>
-                <Typography variant="h6" component="div" gutterBottom style={{ fontWeight: 'bold' }}>
-                  {project.project_name}
-                </Typography>
-              </div>
-              <div style={{ backgroundColor: '#1976D2', padding: '12px', borderRadius: '8px', marginBottom: '12px', boxShadow: 'inset 0px 0px 5px rgba(0, 0, 0, 0.1)' }}>
-                <Typography variant="body2" color="#fff">
-                  {project.description}
-                </Typography>
-              </div>
-              <div style={{ backgroundColor: '#1E88E5', padding: '12px', borderRadius: '8px', marginBottom: '12px' }}>
-                <Typography variant="body1" color="#fff" style={{ marginBottom: '4px' }}>
-                  Datasets: <strong>{project.datasetCount}</strong>
-                </Typography>
-                <Typography variant="body1" color="#fff" style={{ marginBottom: '4px' }}>
-                  Training Jobs: <strong>{project.trainingJobs}</strong>
-                </Typography>
-                <Typography variant="body1" color="#fff">
-                  Services: <strong>{project.services}</strong>
-                </Typography>
-              </div>
-            </CardContent>
-            <CardActions sx={{ justifyContent: 'space-between' }}>
-              <Button
-                onClick={() => handleManageProject(project.project_id)}
-                size="small"
-                sx={{
-                  backgroundColor: '#4CAF50',
-                  color: '#fff',
-                  '&:hover': {
-                    backgroundColor: '#45A049',
-                  },
-                  borderRadius: '20px',
-                  padding: '8px 16px',
-                }}
-              >
-                Manage
-              </Button>
-              <Button
-                onClick={() => handleDeleteProject(project.project_id)}
-                size="small"
-                sx={{
-                  backgroundColor: '#F44336',
-                  color: '#fff',
-                  '&:hover': {
-                    backgroundColor: '#D32F2F',
-                  },
-                  borderRadius: '20px',
-                  padding: '8px 16px',
-                  marginLeft: '10px',
-                }}
-              >
-                Delete
-              </Button>
-            </CardActions>
-          </Card>
-        ))}
+        {/* Modal for adding a new project */}
+        <Dialog open={openModal} onClose={() => setOpenModal(false)}>
+          <DialogTitle>Add New Project</DialogTitle>
+          <DialogContent>
+            <TextField
+              label="Project Name"
+              fullWidth
+              value={newProject.project_name}
+              onChange={(e) => setNewProject({ ...newProject, project_name: e.target.value })}
+              style={{ marginBottom: '10px' }}
+            />
+            <TextField
+              label="Project Description"
+              fullWidth
+              multiline
+              rows={2}
+              value={newProject.description}
+              onChange={(e) => {
+                const value = e.target.value;
+                if (value.length <= 20) {
+                  setNewProject({ ...newProject, description: value });
+                }
+              }}
+              inputProps={{ maxLength: 20 }}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setOpenModal(false)}>Cancel</Button>
+            <Button variant="contained" color="primary" onClick={handleAddProject}>
+              Add Project
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Scrollable projects grid */}
+        <Box
+          display="grid"
+          gridTemplateColumns="repeat(4, 1fr)"
+          gap="20px"
+          sx={{
+            padding: '16px',
+            maxHeight: '100%', // Take full available height
+            overflowY: 'auto', // Enable scrolling for the grid
+            backgroundColor: '#ffffff',
+            borderRadius: '8px',
+          }}
+        >
+          {projects.map((project) => (
+            <Card
+              key={project.project_id}
+              variant="outlined"
+              sx={{
+                padding: '16px',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                backgroundColor: '#2196F3',
+                color: '#fff',
+                transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                height: '350px',
+                width: '300px',
+                borderRadius: '12px',
+                boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)',
+                '&:hover': {
+                  transform: 'translateY(-5px)',
+                  boxShadow: '0 4px 15px rgba(255, 255, 0, 0.5)',
+                },
+              }}
+            >
+              <CardContent sx={{ padding: '0' }}>
+                <div style={{ backgroundColor: '#1565C0', padding: '16px', borderRadius: '8px 8px 0 0', marginBottom: '8px' }}>
+                  <Typography variant="h6" component="div" gutterBottom style={{ fontWeight: 'bold' }}>
+                    {project.project_name}
+                  </Typography>
+                </div>
+                <div style={{ backgroundColor: '#1976D2', padding: '12px', borderRadius: '8px', marginBottom: '12px', boxShadow: 'inset 0px 0px 5px rgba(0, 0, 0, 0.1)' }}>
+                  <Typography variant="body2" color="#fff">
+                    {project.description}
+                  </Typography>
+                </div>
+                <div style={{ backgroundColor: '#1E88E5', padding: '12px', borderRadius: '8px', marginBottom: '12px' }}>
+                  <Typography variant="body1" color="#fff" style={{ marginBottom: '4px' }}>
+                    Datasets: <strong>{project.datasetCount}</strong>
+                  </Typography>
+                  <Typography variant="body1" color="#fff" style={{ marginBottom: '4px' }}>
+                    Training Jobs: <strong>{project.trainingJobs}</strong>
+                  </Typography>
+                  <Typography variant="body1" color="#fff">
+                    Services: <strong>{project.services}</strong>
+                  </Typography>
+                </div>
+              </CardContent>
+              <CardActions sx={{ justifyContent: 'space-between',borderRadius:'100px' }}>
+                <Button
+                  onClick={() => handleManageProject(project.project_id)}
+                  variant="contained"
+                  color="success"
+                  sx={{
+                    fontSize: '14px',
+                    padding: '5px 10px',
+                  }}
+                >
+                  Manage
+                </Button>
+                <Button
+                  onClick={() => handleDeleteProject(project.project_id)}
+                  variant="contained"
+                  color="error"
+                  sx={{
+                    fontSize: '14px',
+                    padding: '5px 10px',
+                  }}
+                >
+                  Delete
+                </Button>
+              </CardActions>
+            </Card>
+          ))}
+        </Box>
       </Box>
-    </div>
+    </>
   );
 }

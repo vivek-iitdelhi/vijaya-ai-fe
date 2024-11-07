@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Box,
   Table,
@@ -14,62 +14,98 @@ import {
 } from "@mui/material";
 import DownloadIcon from "@mui/icons-material/Download";
 import SearchIcon from "@mui/icons-material/Search";
+import axios from "axios";
+import { useParams } from "react-router-dom"; // Import useParams for capturing URL params
 
-const data = [
-  { jobName: "Job 1", baseModel: "BaseModel 1", dataset: "Dataset 1" },
-  { jobName: "Job 2", baseModel: "BaseModel 2", dataset: "Dataset 2" },
-  { jobName: "Job 3", baseModel: "BaseModel 3", dataset: "Dataset 3" },
-  { jobName: "Job 4", baseModel: "BaseModel 1", dataset: "Dataset 1" },
-  { jobName: "Job 5", baseModel: "BaseModel 2", dataset: "Dataset 2" },
-  { jobName: "Job 6", baseModel: "BaseModel 3", dataset: "Dataset 3" },
-  { jobName: "Job 7", baseModel: "BaseModel 1", dataset: "Dataset 1" },
-  { jobName: "Job 8", baseModel: "BaseModel 2", dataset: "Dataset 2" },
-  { jobName: "Job 9", baseModel: "BaseModel 3", dataset: "Dataset 3" },
-  { jobName: "Job 10", baseModel: "BaseModel 1", dataset: "Dataset 1" },
-  { jobName: "Job 11", baseModel: "BaseModel 2", dataset: "Dataset 2" },
-  { jobName: "Job 12", baseModel: "BaseModel 3", dataset: "Dataset 3" },
-];
+const API_MODEL_ARTIFACTS = `${import.meta.env.VITE_HOST_URL}/modelartifacts/`;
+const API_DEPLOY = `${import.meta.env.VITE_HOST_URL}/deploy/`;
 
 const ModelArtifactsTable = () => {
+  const { project_id } = useParams(); // Get project_id from the URL
   const [searchQuery, setSearchQuery] = useState("");
+  const [modelArtifacts, setModelArtifacts] = useState([]);
 
-  const handleDeploy = (jobName) => {
-    alert(`Deploying ${jobName}`);
+  // Get the token from local storage (or where it's stored)
+  const token = localStorage.getItem("authToken");
+
+  // Fetch model artifacts data from the API using project_id
+  useEffect(() => {
+    const fetchModelArtifacts = async () => {
+      try {
+        const response = await axios.get(`${API_MODEL_ARTIFACTS}?project_id=${project_id}`, {
+          headers: {
+            Authorization: `Token ${token}`, // Include the token in the headers
+            "ngrok-skip-browser-warning": "69420", // Include the ngrok header
+          },
+        });
+        setModelArtifacts(response.data);
+      } catch (error) {
+        console.error("Error fetching model artifacts:", error);
+      }
+    };
+
+    if (project_id) {
+      fetchModelArtifacts();
+    }
+  }, [project_id, token]); // Make sure to include token in dependencies
+
+  const handleDeploy = async (jobId, modelId, instanceName) => {
+    try {
+      const response = await axios.post(
+        API_DEPLOY,
+        {
+          project_id, // Use the project_id from the URL
+          model_id: modelId,
+          instance_name: instanceName,
+        },
+        {
+          headers: {
+            Authorization: `Token ${token}`, // Include the token in the headers
+            "ngrok-skip-browser-warning": "69420", // Include the ngrok header
+          }
+        }
+      );
+      alert(`Deployment started for ${jobId}`);
+      console.log("Deployment Response:", response.data);
+    } catch (error) {
+      console.error("Error deploying model:", error);
+    }
   };
 
-  const handleDownload = (jobName) => {
+  const handleDownload = (artifactName) => {
     const confirmation = window.confirm(
-      `Are you sure you want to download ${jobName}?`
+      `Are you sure you want to download ${artifactName}?`
     );
     if (confirmation) {
-      const fileContent = `Job Name: ${jobName}`;
+      const fileContent = `Artifact Name: ${artifactName}`;
       const blob = new Blob([fileContent], { type: "text/plain" });
       const url = URL.createObjectURL(blob);
 
       const link = document.createElement("a");
       link.href = url;
-      link.download = `${jobName}.txt`;
+      link.download = `${artifactName}.txt`;
       link.click();
 
       URL.revokeObjectURL(url);
     }
   };
 
-  const filteredData = data.filter((row) =>
-    row.jobName.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredData = modelArtifacts.filter((row) =>
+    row.Artifact_name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
     <Box
       sx={{
-        height: "100vh", // Full height
+        height: "100vh",
         display: "flex",
         flexDirection: "column",
         backgroundColor: "#f5f5f5",
+        padding: "20px", // Add padding for better alignment
       }}
     >
       {/* Search Bar */}
-      <Box sx={{ padding: "20px" }}>
+      <Box sx={{ marginBottom: "20px", maxWidth: "800px", marginX:'327px' }}> {/* Center the search bar */}
         <TextField
           label="Search"
           variant="outlined"
@@ -95,11 +131,11 @@ const ModelArtifactsTable = () => {
       <TableContainer
         component={Paper}
         sx={{
-          flexGrow: 1, // Allows table to grow and fill remaining space
           borderRadius: "10px",
           boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-          overflowY: "auto", // Enables vertical scrolling
-          margin: "0px 20px 20px 20px", // Small margin around the table
+          overflowY: "auto",
+          mx: "auto", // Center the table horizontally
+          maxWidth: "800px", // Limit max width for better alignment
         }}
       >
         <Table stickyHeader aria-label="model artifacts table">
@@ -113,7 +149,7 @@ const ModelArtifactsTable = () => {
                   fontSize: "16px",
                 }}
               >
-                Job Name
+                Artifact Name
               </TableCell>
               <TableCell
                 sx={{
@@ -123,7 +159,7 @@ const ModelArtifactsTable = () => {
                   fontSize: "16px",
                 }}
               >
-                Base Model
+                Storage Path
               </TableCell>
               <TableCell
                 sx={{
@@ -133,7 +169,7 @@ const ModelArtifactsTable = () => {
                   fontSize: "16px",
                 }}
               >
-                Dataset
+                Deployment Status
               </TableCell>
               <TableCell
                 sx={{
@@ -152,13 +188,13 @@ const ModelArtifactsTable = () => {
             {filteredData.map((row, index) => (
               <TableRow key={index}>
                 <TableCell sx={{ color: "#333", fontSize: "14px" }}>
-                  {row.jobName}
+                  {row.Artifact_name}
                 </TableCell>
                 <TableCell sx={{ color: "#333", fontSize: "14px" }}>
-                  {row.baseModel}
+                  {row.Storage_path}
                 </TableCell>
                 <TableCell sx={{ color: "#333", fontSize: "14px" }}>
-                  {row.dataset}
+                  {row.Deployment_status}
                 </TableCell>
                 <TableCell
                   sx={{
@@ -171,7 +207,7 @@ const ModelArtifactsTable = () => {
                   <Button
                     variant="contained"
                     color="primary"
-                    onClick={() => handleDeploy(row.jobName)}
+                    onClick={() => handleDeploy(row.Training_job_id, row.Artifact_id, "test instance")}
                     sx={{
                       textTransform: "none",
                       padding: "8px 16px",
@@ -184,7 +220,7 @@ const ModelArtifactsTable = () => {
                     variant="outlined"
                     color="secondary"
                     startIcon={<DownloadIcon />}
-                    onClick={() => handleDownload(row.jobName)}
+                    onClick={() => handleDownload(row.Artifact_name)}
                     sx={{
                       textTransform: "none",
                       padding: "8px 16px",
