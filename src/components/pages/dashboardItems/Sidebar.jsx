@@ -76,19 +76,21 @@ function Sidebar(props) {
       edge="start"
       onClick={handleDrawerToggle}
       sx={{
-        marginX:'180px',
+        marginX:'0px',
+        gap:'75px',
         display: 'flex',
         alignItems: 'center',
-        background: 'white', // Matches the navbar background color
-        borderRadius: '0.5rem', // Matches the navbar's rounded corner styling
-        padding: '0.5rem', // Padding for spacing
+        background: 'white', 
+        borderRadius: '0.5rem', 
+        padding: '0.5rem', 
         width: '100%',
         justifyContent: 'flex-start', // Aligns content to the left
         '&:hover': {
-          backgroundColor: 'white', // Hover effect like navbar links
+          backgroundColor: 'white',
         },
       }}
     >
+      Dashboard
 
       <MdMenuOpen />
     </IconButton>

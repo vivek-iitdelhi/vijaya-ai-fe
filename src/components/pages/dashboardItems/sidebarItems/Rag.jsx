@@ -8,11 +8,6 @@ const dummyData = [
   { id: 3, name: 'Card 3', description: 'Description of Card 3' },
   { id: 4, name: 'Card 4', description: 'Description of Card 4' },
   { id: 5, name: 'Card 5', description: 'Description of Card 5' },
-  { id: 6, name: 'Card 6', description: 'Description of Card 6' },
-  { id: 7, name: 'Card 7', description: 'Description of Card 7' },
-  { id: 8, name: 'Card 8', description: 'Description of Card 8' },
-  { id: 9, name: 'Card 9', description: 'Description of Card 9' },
-  { id: 10, name: 'Card 10', description: 'Description of Card 10' },
 ];
 
 const RAG = () => {
@@ -27,12 +22,38 @@ const RAG = () => {
     <Box sx={{ padding: '20px' }}>
       <Grid container spacing={3}>
         {dummyData.map((card) => (
-          <Grid item xs={12} sm={6} md={2.4} key={card.id}>
-            <Card sx={{ position: 'relative', padding: '16px', height: '200px' }}>
-              {/* Upload Button in the Left Corner */}
+          <Grid item xs={12} sm={6} md={3} key={card.id}>  {/* Adjust to 3 cards per row */}
+            <Card
+              sx={{
+                position: 'relative',
+                padding: '16px',
+                height: '350px',
+                width: '100%',
+                backgroundColor: '#2196F3',
+                color: '#fff',
+                transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                borderRadius: '12px',
+                boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)',
+                '&:hover': {
+                  transform: 'translateY(-5px)',
+                  boxShadow: '0 4px 15px rgba(255, 255, 0, 0.5)',
+                },
+              }}
+            >
+              {/* Upload Button at the Right Top */}
               <IconButton
                 component="label"
-                sx={{ position: 'absolute', top: '10px', left: '10px' }}
+                sx={{
+                  position: 'absolute',
+                  top: '10px',
+                  right: '10px', 
+                  backgroundColor: '#1976D2',
+                  borderRadius: '8px',
+                  padding: '5px',
+                  '&:hover': {
+                    backgroundColor: '#1565C0',
+                  },
+                }}
                 color="primary"
               >
                 <CloudUploadIcon />
@@ -44,18 +65,37 @@ const RAG = () => {
               </IconButton>
 
               {/* Card Content */}
-              <CardContent>
-                <Typography variant="h6" gutterBottom>
-                  {card.name}
-                </Typography>
-                <Typography variant="body2" color="textSecondary">
-                  {card.description}
-                </Typography>
+              <CardContent sx={{ padding: '3rem' }}>
+                <div
+                  style={{
+                    backgroundColor: '#1565C0',
+                    padding: '10px',
+                    borderRadius: '8px 8px 0 0',
+                    marginBottom: '8px',
+                  }}
+                >
+                  <Typography variant="h6" component="div" gutterBottom style={{ fontWeight: 'bold',}}>
+                    {card.name}
+                  </Typography>
+                </div>
+                <div
+                  style={{
+                    backgroundColor: '#1976D2',
+                    padding: '12px',
+                    borderRadius: '8px',
+                    marginBottom: '12px',
+                    boxShadow: 'inset 0px 0px 5px rgba(0, 0, 0, 0.1)',
+                  }}
+                >
+                  <Typography variant="body2" color="#fff">
+                    {card.description}
+                  </Typography>
+                </div>
               </CardContent>
 
               {/* Uploaded File Display */}
               {files[card.id] && (
-                <Typography variant="body2" color="primary">
+                <Typography variant="body2" color="primary" sx={{ marginTop: '10px' }}>
                   Uploaded: {files[card.id].name}
                 </Typography>
               )}
