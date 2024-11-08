@@ -10,13 +10,14 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
-import MenuIcon from '@mui/icons-material/Menu';
+// import MenuIcon from '@mui/icons-material/Menu';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import Avatar from '@mui/material/Avatar';
 import { FiHome, FiUser, FiSettings, FiDatabase, FiSliders } from 'react-icons/fi';
 import { FaConnectdevelop } from "react-icons/fa";
+import { MdMenuOpen } from "react-icons/md";
 import { MdOutlineLogout } from 'react-icons/md';
 import FineTuning from './sidebarItems/FineTuning';
 import RAG from './sidebarItems/Rag';
@@ -70,20 +71,27 @@ function Sidebar(props) {
     <div style={{ paddingTop: '10px', display: 'flex', flexDirection: 'column', height: '100%' }}>
       {/* Username and Menu Icon */}
       <IconButton
-        color="inherit"
-        aria-label="open drawer"
-        edge="start"
-        onClick={handleDrawerToggle}
-        sx={{
-          display: 'flex',
-          justifyContent: 'center',
-          width: '100%',
-          mr: 2,
-        }}
-      >
-        <h6>@{username}</h6> {/* Display username from local storage */}
-        <MenuIcon />
-      </IconButton>
+      color="inherit"
+      aria-label="open drawer"
+      edge="start"
+      onClick={handleDrawerToggle}
+      sx={{
+        marginX:'180px',
+        display: 'flex',
+        alignItems: 'center',
+        background: 'white', // Matches the navbar background color
+        borderRadius: '0.5rem', // Matches the navbar's rounded corner styling
+        padding: '0.5rem', // Padding for spacing
+        width: '100%',
+        justifyContent: 'flex-start', // Aligns content to the left
+        '&:hover': {
+          backgroundColor: 'white', // Hover effect like navbar links
+        },
+      }}
+    >
+
+      <MdMenuOpen />
+    </IconButton>
 
       <Divider />
 
@@ -107,13 +115,16 @@ function Sidebar(props) {
 
       {/* User Profile Section at the Bottom */}
       <Box sx={{ mt: 'auto', p: 2 }}>
+      <h2>User Details</h2>
         <Divider />
         <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
           <Avatar sx={{ width: 40, height: 40, mr: 2 }}>{username[0]}</Avatar>
           <Typography variant="body1">@{username}</Typography> {/* Display username */}
         </Box>
+        
         <List>
           <ListItem disablePadding>
+            
             <ListItemButton>
               <FiUser /> {/* Profile icon */}
               <ListItemText primary="Profile" sx={{ ml: 2 }} />
