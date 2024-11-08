@@ -11,9 +11,13 @@ import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
 import MenuIcon from '@mui/icons-material/Menu';
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'; // Icon for pulling out the sidebar
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
+import Avatar from '@mui/material/Avatar';
+import { FiHome, FiUser, FiSettings, FiDatabase, FiSliders } from 'react-icons/fi';
+import { FaConnectdevelop } from "react-icons/fa";
+import { MdOutlineLogout } from 'react-icons/md';
 import FineTuning from './sidebarItems/FineTuning';
 import RAG from './sidebarItems/Rag';
 import Tools from './sidebarItems/Tools';
@@ -25,17 +29,25 @@ function Sidebar(props) {
   const { window } = props;
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [selectedOption, setSelectedOption] = React.useState('Home');
-  const [sidebarVisible, setSidebarVisible] = React.useState(true);  // Track sidebar visibility
-  const [toolbarVisible, setToolbarVisible] = React.useState(true);  // Track toolbar visibility
+  const [sidebarVisible, setSidebarVisible] = React.useState(true);
+  const [toolbarVisible, setToolbarVisible] = React.useState(true);
 
   const handleDrawerToggle = () => {
-    setSidebarVisible(!sidebarVisible);  // Toggle sidebar visibility
+    setSidebarVisible(!sidebarVisible);
   };
 
   const handleOptionClick = (option) => {
     setSelectedOption(option);
-    setToolbarVisible(false);  // Hide the toolbar when a menu item is clicked
+    setToolbarVisible(false);
   };
+
+  const handleLogout = () => {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('username');
+    window.location.href = 'https://dashboard.vijaya.ai/'; // Redirect to the dashboard
+  };
+
+  const username = localStorage.getItem("username") || "User"; // Get username from local storage
 
   const renderContent = () => {
     switch (selectedOption) {
@@ -53,38 +65,76 @@ function Sidebar(props) {
         return null;
     }
   };
+
   const drawer = (
-    <div style={{ paddingTop:'10px' }}>
+    <div style={{ paddingTop: '10px', display: 'flex', flexDirection: 'column', height: '100%' }}>
+      {/* Username and Menu Icon */}
       <IconButton
         color="inherit"
         aria-label="open drawer"
         edge="start"
         onClick={handleDrawerToggle}
         sx={{
-          display: 'flex',       
-          justifyContent: 'center',  
-          width: '100%',        
-          mr: 2,                 
+          display: 'flex',
+          justifyContent: 'center',
+          width: '100%',
+          mr: 2,
         }}
       >
-        <h6>@Username</h6>
+        <h6>@{username}</h6> {/* Display username from local storage */}
         <MenuIcon />
       </IconButton>
-    
+
       <Divider />
+
+      {/* Main Navigation List with Icons */}
       <List>
-        {['Home', 'Fine Tuning', 'RAG', 'Tools', 'DB Connection'].map((text) => (
+        {[
+          { text: 'Home', icon: <FiHome /> },
+          { text: 'Fine Tuning', icon: <FiSliders /> },  // Fine Tuning Icon
+          { text: 'RAG', icon: <FaConnectdevelop /> },           // RAG Icon for Retrieval-Augmented Generation
+          { text: 'Tools', icon: <FiSettings /> },       // Replacing FiTool with FiSettings for Tools
+          { text: 'DB Connection', icon: <FiDatabase /> },
+        ].map(({ text, icon }) => (
           <ListItem key={text} disablePadding>
             <ListItemButton onClick={() => handleOptionClick(text)}>
-              <ListItemText primary={text} />
+              {icon} {/* Icon from react-icons */}
+              <ListItemText primary={text} sx={{ ml: 2 }} />
             </ListItemButton>
           </ListItem>
         ))}
       </List>
+
+      {/* User Profile Section at the Bottom */}
+      <Box sx={{ mt: 'auto', p: 2 }}>
+        <Divider />
+        <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
+          <Avatar sx={{ width: 40, height: 40, mr: 2 }}>{username[0]}</Avatar>
+          <Typography variant="body1">@{username}</Typography> {/* Display username */}
+        </Box>
+        <List>
+          <ListItem disablePadding>
+            <ListItemButton>
+              <FiUser /> {/* Profile icon */}
+              <ListItemText primary="Profile" sx={{ ml: 2 }} />
+            </ListItemButton>
+          </ListItem>
+          <ListItem disablePadding>
+            <ListItemButton>
+              <FiSettings /> {/* Settings icon */}
+              <ListItemText primary="Settings" sx={{ ml: 2 }} />
+            </ListItemButton>
+          </ListItem>
+          <ListItem disablePadding>
+            <ListItemButton onClick={handleLogout}>
+              <MdOutlineLogout /> {/* Logout icon */}
+              <ListItemText primary="Logout" sx={{ ml: 2 }} />
+            </ListItemButton>
+          </ListItem>
+        </List>
+      </Box>
     </div>
   );
-  
-  
 
   const container = window !== undefined ? () => window().document.body : undefined;
 
@@ -95,12 +145,10 @@ function Sidebar(props) {
         position="fixed"
         sx={{
           width: { sm: `calc(100% - ${drawerWidth}px)` },
-          ml: { sm: sidebarVisible ? `${drawerWidth}px` : '0' },  // Adjust based on sidebar visibility
-          display: toolbarVisible ? 'flex' : 'none',  // Show/hide the toolbar based on visibility state
+          ml: { sm: sidebarVisible ? `${drawerWidth}px` : '0' },
+          display: toolbarVisible ? 'flex' : 'none',
         }}
-      >
-
-      </AppBar>
+      />
 
       {/* Sidebar Drawer */}
       <Box
@@ -108,7 +156,7 @@ function Sidebar(props) {
         sx={{
           width: { sm: drawerWidth },
           flexShrink: { sm: 0 },
-          display: sidebarVisible ? 'block' : 'none',  // Hide/Show based on sidebarVisible state
+          display: sidebarVisible ? 'block' : 'none',
         }}
         aria-label="mailbox folders"
       >
@@ -130,7 +178,7 @@ function Sidebar(props) {
         <Drawer
           variant="permanent"
           sx={{
-            display: { xs: 'none', sm: sidebarVisible ? 'block' : 'none' },  // Hide/Show based on sidebarVisible state
+            display: { xs: 'none', sm: sidebarVisible ? 'block' : 'none' },
             '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
           }}
           open
@@ -139,7 +187,7 @@ function Sidebar(props) {
         </Drawer>
       </Box>
 
-      {/* Sidebar toggle button (Floating button when sidebar is hidden) */}
+      {/* Sidebar toggle button */}
       {!sidebarVisible && (
         <IconButton
           color="primary"
@@ -162,7 +210,7 @@ function Sidebar(props) {
         sx={{
           flexGrow: 1,
           p: 3,
-          width: sidebarVisible ? { sm: `calc(100% - ${drawerWidth}px)` } : '100%',  // Adjust width based on sidebar visibility
+          width: sidebarVisible ? { sm: `calc(100% - ${drawerWidth}px)` } : '100%',
         }}
       >
         <Toolbar />

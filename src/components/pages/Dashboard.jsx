@@ -5,7 +5,6 @@ import { useEffect, useState } from "react";
 import LogIn from './LogIn';
 import Modal from '@mui/material/Modal';
 import Box from '@mui/material/Box';
-
 const Dashboard = () => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [showLoginModal, setShowLoginModal] = useState(false);

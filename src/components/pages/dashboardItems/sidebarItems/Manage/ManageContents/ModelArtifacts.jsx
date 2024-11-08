@@ -105,7 +105,7 @@ const ModelArtifactsTable = () => {
       }}
     >
       {/* Search Bar */}
-      <Box sx={{ marginBottom: "20px", maxWidth: "800px", marginX:'327px' }}> {/* Center the search bar */}
+      <Box sx={{ marginBottom: "20px", maxWidth: "600px" }}> 
         <TextField
           label="Search"
           variant="outlined"
@@ -135,7 +135,7 @@ const ModelArtifactsTable = () => {
           boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
           overflowY: "auto",
           mx: "auto", // Center the table horizontally
-          maxWidth: "800px", // Limit max width for better alignment
+          maxWidth: "1500px", // Limit max width for better alignment
         }}
       >
         <Table stickyHeader aria-label="model artifacts table">

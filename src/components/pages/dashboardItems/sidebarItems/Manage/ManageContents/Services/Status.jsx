@@ -61,9 +61,9 @@ export default function Status() {
   const handleDeploy = () => {
     if (selectedModel && deploymentName) {
       const newDeployment = {
-        id: deployments.length + 1,
+        id: deployments.length > 0 ? deployments[deployments.length - 1].id + 1 : 1, // Fix ID issue
         name: deploymentName,
-        model: selectedModel.name,
+        model: selectedModel.model_name, // Correctly use the model name
         status: 'Pending',
       };
       setDeployments([...deployments, newDeployment]);
@@ -113,20 +113,20 @@ export default function Status() {
             ) : (
               <List>
                 {baseModels.map((model) => (
-                 <ListItem
-                 button={true} // Explicitly pass a boolean value if needed
-                 key={model.id}
-                 onClick={() => handleModelSelect(model)}
-                 sx={{
-                   backgroundColor: selectedModel?.id === model.id ? '#90caf9' : '#ffffff',
-                   marginBottom: '10px',
-                   borderRadius: '8px',
-                   '&:hover': {
-                     backgroundColor: '#e3f2fd',
-                   },
-                 }}
-               >
-                    <ListItemText primary={model.name} />
+                  <ListItem
+                    button
+                    key={model.model_id}
+                    onClick={() => handleModelSelect(model)}
+                    sx={{
+                      backgroundColor: selectedModel?.model_id === model.model_id ? '#90caf9' : '#ffffff',
+                      marginBottom: '10px',
+                      borderRadius: '8px',
+                      '&:hover': {
+                        backgroundColor: '#e3f2fd',
+                      },
+                    }}
+                  >
+                    <ListItemText primary={model.model_name} />
                   </ListItem>
                 ))}
               </List>

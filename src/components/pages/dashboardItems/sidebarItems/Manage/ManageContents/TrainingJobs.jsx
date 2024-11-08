@@ -38,6 +38,7 @@ export default function TrainingJobs() {
   const [datasetTrain, setDatasetTrain] = useState('');
   const [datasetTest, setDatasetTest] = useState('');
   const [jobName, setJobName] = useState('');
+  const [parameters, setParameters] = useState([]); // Added state for parameters
 
   useEffect(() => {
     const fetchBaseModels = async () => {
@@ -64,7 +65,6 @@ export default function TrainingJobs() {
             "ngrok-skip-browser-warning": "69420"
           },
         });
-        console.log('Training Jobs:', response.data);
         setJobs(response.data);
       } catch (error) {
         console.error('Error fetching training jobs:', error);
@@ -99,9 +99,28 @@ export default function TrainingJobs() {
   const handleOpenModal = () => setOpenModal(true);
   const handleCloseModal = () => setOpenModal(false);
 
-  const handleBaseModelChange = (event) => setBaseModel(event.target.value);
-  const handleDatasetTrainChange = (event) => setDatasetTrain(event.target.value);
-  const handleDatasetTestChange = (event) => setDatasetTest(event.target.value);
+  const handleBaseModelChange = (event) => {
+    const selectedModelId = event.target.value;
+    setBaseModel(selectedModelId);
+
+    // Mock parameter data for selected base model
+    if (selectedModelId) {
+      setParameters([
+        { name: 'Learning Rate', value: '0.05' },
+        { name: 'Batch Size', value: '3' },
+        { name: 'Epochs', value: 'fg127gb' },
+        { name: 'Dropout Rate', value: '23%' }
+      ]);
+    } else {
+      setParameters([]);
+    }
+  };
+
+  const handleParameterChange = (index, event) => {
+    const newParameters = [...parameters];
+    newParameters[index].value = event.target.value;
+    setParameters(newParameters);
+  };
 
   const filteredJobs = jobs.filter((job) =>
     job.training_job_name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -115,6 +134,10 @@ export default function TrainingJobs() {
       train_dataset_id: datasetTrain,
       test_dataset_id: datasetTest,   
       project_id: project_id,
+      parameters: parameters.reduce((acc, param) => {
+        acc[param.name] = param.value;
+        return acc;
+      }, {})
     };
 
     try {
@@ -131,6 +154,7 @@ export default function TrainingJobs() {
       setBaseModel('');
       setDatasetTrain('');
       setDatasetTest('');
+      setParameters([]); // Clear parameters
     } catch (error) {
       console.error('Error creating new training job:', error);
     }
@@ -202,6 +226,9 @@ export default function TrainingJobs() {
                 Base Model
               </TableCell>
               <TableCell sx={{ fontWeight: 'bold', backgroundColor: '#3f51b5', color: '#fff' }}>
+                Train Dataset
+              </TableCell>
+              <TableCell sx={{ fontWeight: 'bold', backgroundColor: '#3f51b5', color: '#fff' }}>
                 Status
               </TableCell>
             </TableRow>
@@ -211,6 +238,7 @@ export default function TrainingJobs() {
               <TableRow key={index}>
                 <TableCell>{job.training_job_name}</TableCell>
                 <TableCell>{job.model_name}</TableCell>
+                <TableCell>{job.train_dataset_name}</TableCell>
                 <TableCell>{job.status}</TableCell>
               </TableRow>
             ))}
@@ -264,13 +292,13 @@ export default function TrainingJobs() {
           </FormControl>
 
           <FormControl fullWidth margin="normal">
-            <InputLabel id="train-dataset-select-label">Training Dataset</InputLabel>
+            <InputLabel id="train-dataset-select-label">Train Dataset</InputLabel>
             <Select
               labelId="train-dataset-select-label"
               id="train-dataset-select"
               value={datasetTrain}
-              label="Training Dataset"
-              onChange={handleDatasetTrainChange}
+              label="Train Dataset"
+              onChange={(e) => setDatasetTrain(e.target.value)}
             >
               {datasets.map((dataset) => (
                 <MenuItem key={dataset.dataset_id} value={dataset.dataset_id}>
@@ -281,13 +309,13 @@ export default function TrainingJobs() {
           </FormControl>
 
           <FormControl fullWidth margin="normal">
-            <InputLabel id="test-dataset-select-label">Testing Dataset</InputLabel>
+            <InputLabel id="test-dataset-select-label">Test Dataset</InputLabel>
             <Select
               labelId="test-dataset-select-label"
               id="test-dataset-select"
               value={datasetTest}
-              label="Testing Dataset"
-              onChange={handleDatasetTestChange}
+              label="Test Dataset"
+              onChange={(e) => setDatasetTest(e.target.value)}
             >
               {datasets.map((dataset) => (
                 <MenuItem key={dataset.dataset_id} value={dataset.dataset_id}>
@@ -297,12 +325,22 @@ export default function TrainingJobs() {
             </Select>
           </FormControl>
 
+          {parameters.map((param, index) => (
+            <TextField
+              key={index}
+              label={param.name}
+              fullWidth
+              margin="normal"
+              value={param.value}
+              onChange={(e) => handleParameterChange(index, e)}
+            />
+          ))}
+
           <Button
             variant="contained"
-            color="primary"
             fullWidth
             onClick={handleCreateJob}
-            sx={{ marginTop: '20px' }}
+            sx={{ marginTop: '20px', borderRadius: '20px' }}
           >
             Create Job
           </Button>

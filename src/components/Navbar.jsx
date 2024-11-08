@@ -22,6 +22,9 @@ const Navbar = () => {
   // State to track authentication status
   const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('authToken'));
 
+  // Dummy credit data (placeholder)
+  const [credits, setCredits] = useState(100); // This can be replaced with API data in the future
+
   // Function to toggle drawer
   const handleDrawerToggle = () => {
     setMenuOpen(!menuOpen);
@@ -73,22 +76,6 @@ const Navbar = () => {
         >
           <ListItemText primary={isAuthenticated ? "Logout" : "Dashboard"} />
         </ListItem>
-        {!isAuthenticated && (
-          <ListItem
-            button
-            component={NavLink}
-            to="/login"
-            sx={{ padding: '1rem', color: '#fff', '&:hover': { backgroundColor: '#555' } }}
-          >
-            <ListItemText primary="Log In" />
-          </ListItem>
-        )}
-        <ListItem button component={NavLink} to="/about" sx={{ padding: '1rem', color: '#fff', '&:hover': { backgroundColor: '#555' } }}>
-          <ListItemText primary="About" />
-        </ListItem>
-        <ListItem button component={NavLink} to="/contactus" sx={{ padding: '1rem', color: '#fff', '&:hover': { backgroundColor: '#555' } }}>
-          <ListItemText primary="Contact Us" />
-        </ListItem>
       </List>
       <Box sx={{ padding: '1rem', backgroundColor: '#222' }}>
         <Typography variant="body2" align="center" color="#aaa">
@@ -137,6 +124,16 @@ const Navbar = () => {
           </Typography>
           {!isMobile && (
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <Typography
+                variant="body1"
+                sx={{
+                  color: '#fff',
+                  fontWeight: 600,
+                  mr: 2,
+                }}
+              >
+                Total Credits: ${credits}
+              </Typography>
               {isAuthenticated ? (
                 <Button
                   color="inherit"
@@ -172,40 +169,6 @@ const Navbar = () => {
                   Dashboard
                 </Button>
               )}
-              <Button
-                color="inherit"
-                component={NavLink}
-                to="/about"
-                sx={{
-                  mx: 1,
-                  fontWeight: 600,
-                  fontSize: '1rem',
-                  transition: 'color 0.3s ease, background 0.3s ease',
-                  '&:hover': {
-                    color: '#6a00f4',
-                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                  },
-                }}
-              >
-                About
-              </Button>
-              <Button
-                color="inherit"
-                component={NavLink}
-                to="/contactus"
-                sx={{
-                  mx: 1,
-                  fontWeight: 600,
-                  fontSize: '1rem',
-                  transition: 'color 0.3s ease, background 0.3s ease',
-                  '&:hover': {
-                    color: '#6a00f4',
-                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                  },
-                }}
-              >
-                Contact Us
-              </Button>
             </Box>
           )}
         </Toolbar>
