@@ -122,16 +122,16 @@ export default function ProjectDetailPage() {
   return (
     <>
       {/* Sticky container for header */}
-      <Box sx={{ position: 'sticky', top: 0, zIndex: 1000, backgroundColor: '#f7f7f7',width:'1500px' }}>
+      <Box sx={{ position: 'sticky', top: 0, zIndex: 1000, backgroundColor: 'white', width: '100%' }}>
         {/* Main title */}
-        <Box sx={{ padding: '5px 10px', borderBottom: '1px solid #ddd' }}>
+        <Box sx={{ padding: '5px 8px', borderBottom: '1px solid #ddd' }}>
           <Typography variant="h4" component="h1">
             Project Dashboard
           </Typography>
         </Box>
 
         {/* Sticky header for project section */}
-        <Box 
+        <Box
           sx={{
             display: 'flex',
             justifyContent: 'space-between',
@@ -147,13 +147,13 @@ export default function ProjectDetailPage() {
           <Typography variant="h5" component="h2">
             My Projects
           </Typography>
-          <Button style={{borderRadius:'1rem'}} variant="contained" color="primary" onClick={() => setOpenModal(true)}>
+          <Button style={{ borderRadius: '1rem' }} variant="contained" color="primary" onClick={() => setOpenModal(true)}>
             Create New Project
           </Button>
         </Box>
       </Box>
 
-      <Box 
+      <Box
         sx={{
           padding: '16px',
           height: 'calc(100vh - 180px)', // Adjust height based on header height
@@ -206,6 +206,15 @@ export default function ProjectDetailPage() {
             overflowY: 'auto', // Enable scrolling for the grid
             backgroundColor: '#ffffff',
             borderRadius: '8px',
+            '@media (max-width: 1200px)': {
+              gridTemplateColumns: 'repeat(3, 1fr)', // 3 columns on medium screens
+            },
+            '@media (max-width: 900px)': {
+              gridTemplateColumns: 'repeat(2, 1fr)', // 2 columns on smaller screens
+            },
+            '@media (max-width: 600px)': {
+              gridTemplateColumns: '1fr', // Single column on mobile screens
+            },
           }}
         >
           {projects.map((project) => (
@@ -221,12 +230,15 @@ export default function ProjectDetailPage() {
                 color: '#fff',
                 transition: 'transform 0.3s ease, box-shadow 0.3s ease',
                 height: '350px',
-                width: '300px',
+                width: '100%',
                 borderRadius: '12px',
                 boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)',
                 '&:hover': {
                   transform: 'translateY(-5px)',
                   boxShadow: '0 4px 15px rgba(255, 255, 0, 0.5)',
+                },
+                '@media (max-width: 600px)': {
+                  height: 'auto', // Allow card to adjust height on mobile
                 },
               }}
             >
@@ -236,47 +248,73 @@ export default function ProjectDetailPage() {
                     {project.project_name}
                   </Typography>
                 </div>
-                <div style={{ backgroundColor: '#1976D2', padding: '12px', borderRadius: '8px', marginBottom: '12px', boxShadow: 'inset 0px 0px 5px rgba(0, 0, 0, 0.1)' }}>
+                <div
+                  style={{
+                    backgroundColor: '#1976D2',
+                    padding: '12px',
+                    borderRadius: '8px',
+                    marginBottom: '12px',
+                    boxShadow: 'inset 0px 0px 5px rgba(0, 0, 0, 0.1)',
+                  }}
+                >
                   <Typography variant="body2" color="#fff">
                     {project.description}
                   </Typography>
                 </div>
-                <div style={{ backgroundColor: '#1E88E5', padding: '12px', borderRadius: '8px', marginBottom: '12px' }}>
+                <div
+                  style={{
+                    backgroundColor: '#1E88E5',
+                    padding: '12px',
+                    borderRadius: '8px',
+                    marginBottom: '12px',
+                  }}
+                >
                   <Typography variant="body1" color="#fff" style={{ marginBottom: '4px' }}>
                     Datasets: <strong>{project.datasetCount}</strong>
                   </Typography>
                   <Typography variant="body1" color="#fff" style={{ marginBottom: '4px' }}>
                     Training Jobs: <strong>{project.trainingJobs}</strong>
                   </Typography>
-                  <Typography variant="body1" color="#fff">
+                  <Typography variant="body1" color="#fff" style={{ marginBottom: '4px' }}>
                     Services: <strong>{project.services}</strong>
                   </Typography>
                 </div>
               </CardContent>
-              <CardActions sx={{ justifyContent: 'space-between',borderRadius:'100px' }}>
-                <Button
-                  onClick={() => handleManageProject(project.project_id)}
-                  variant="contained"
-                  color="success"
-                  sx={{
-                    fontSize: '14px',
-                    padding: '5px 10px',
-                  }}
-                >
-                  Manage
-                </Button>
-                <Button
-                  onClick={() => handleDeleteProject(project.project_id)}
-                  variant="contained"
-                  color="error"
-                  sx={{
-                    fontSize: '14px',
-                    padding: '5px 10px',
-                  }}
-                >
-                  Delete
-                </Button>
-              </CardActions>
+              <CardActions sx={{gap:'50px'}}>
+                  <Button
+                    size="small"
+                    color="success"
+                    sx={{
+                      backgroundColor: 'green', 
+                      color: '#fff', 
+                      '&:hover': {
+                        backgroundColor: '#81c784', // Lighter green on hover
+                      },
+                      borderRadius: '20px', // Rounded corners
+                      padding: '6px 16px', // Adjust padding for better button size
+                    }}
+                    onClick={() => handleManageProject(project.project_id)}
+                  >
+                    Manage
+                  </Button>
+                  <Button
+                    size="small"
+                    color="error"
+                    sx={{
+                      backgroundColor: 'red', 
+                      color: '#fff', // White text
+                      '&:hover': {
+                        backgroundColor: '#ef5350', // Lighter red on hover
+                      },
+                      borderRadius: '20px', // Rounded corners
+                      padding: '6px 16px', // Adjust padding for better button size
+                    }}
+                    onClick={() => handleDeleteProject(project.project_id)}
+                  >
+                    Delete
+                  </Button>
+                </CardActions>
+
             </Card>
           ))}
         </Box>

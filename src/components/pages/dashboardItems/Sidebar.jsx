@@ -23,15 +23,18 @@ import FineTuning from './sidebarItems/FineTuning';
 import RAG from './sidebarItems/Rag';
 import Tools from './sidebarItems/Tools';
 import DBConnection from './sidebarItems/DbConnection';
+import { useNavigate } from 'react-router-dom'
 
 const drawerWidth = 240;
 
 function Sidebar(props) {
   const { window } = props;
   const [mobileOpen, setMobileOpen] = React.useState(false);
+
   const [selectedOption, setSelectedOption] = React.useState('Home');
   const [sidebarVisible, setSidebarVisible] = React.useState(true);
   const [toolbarVisible, setToolbarVisible] = React.useState(true);
+  const [loggedOut, setLoggedOut] = React.useState(false);
 
   const handleDrawerToggle = () => {
     setSidebarVisible(!sidebarVisible);
@@ -43,10 +46,19 @@ function Sidebar(props) {
   };
 
   const handleLogout = () => {
+    // Perform logout logic (e.g., clearing tokens, resetting user state)
     localStorage.removeItem('authToken');
     localStorage.removeItem('username');
-    window.location.href = 'https://dashboard.vijaya.ai/'; // Redirect to the dashboard
+    console.log("logout done");
+    setLoggedOut(true)
+    if(loggedOut){
+    window.open('/dashboard', '_blank');}
   };
+
+
+  
+  
+  
 
   const username = localStorage.getItem("username") || "User"; // Get username from local storage
 
