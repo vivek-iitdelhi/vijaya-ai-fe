@@ -19,9 +19,6 @@ const Navbar = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  // State to track authentication status
-  const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('authToken'));
-
   // Dummy credit data (placeholder)
   const [credits, setCredits] = useState(100); // This can be replaced with API data in the future
 
@@ -35,24 +32,8 @@ const Navbar = () => {
     window.open('/dashboard', '_blank');
   };
 
-  // Handle Logout
-  const handleLogout = () => {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('username');
-    setIsAuthenticated(false); // Update authentication state
-  };
-
   useEffect(() => {
-    const handleStorageChange = () => {
-      setIsAuthenticated(!!localStorage.getItem('authToken'));
-    };
-
-    // Listen for changes in localStorage (e.g., when token is set)
-    window.addEventListener('storage', handleStorageChange);
-
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-    };
+    // No authentication-related effects anymore
   }, []);
 
   const drawer = (
@@ -71,10 +52,10 @@ const Navbar = () => {
       <List>
         <ListItem
           button
-          onClick={isAuthenticated ? handleLogout : openDashboardInNewTab}
+          onClick={openDashboardInNewTab}
           sx={{ padding: '1rem', color: '#fff', '&:hover': { backgroundColor: '#555' } }}
         >
-          <ListItemText primary={isAuthenticated ? "Logout" : "Dashboard"} />
+          <ListItemText primary="Dashboard" />
         </ListItem>
       </List>
       <Box sx={{ padding: '1rem', backgroundColor: '#222' }}>
@@ -104,20 +85,20 @@ const Navbar = () => {
             </IconButton>
           )}
           <Typography
-              variant="h6"
-              component="a"
-              href="https://www.vijaya.ai/"
-              target="_blank"
-              rel="noopener noreferrer"
-              sx={{
-                flexGrow: 1,
-                textDecoration: 'none',
-                color: '#fff',
-                fontWeight: 700,
-                letterSpacing: '1px',
-                fontSize: '1.8rem',
-                transition: 'color 0.3s ease',
-                '&:hover': { color: '#ffd700' },
+            variant="h6"
+            component="a"
+            href="https://www.vijaya.ai/"
+            target="_blank"
+            rel="noopener noreferrer"
+            sx={{
+              flexGrow: 1,
+              textDecoration: 'none',
+              color: '#fff',
+              fontWeight: 700,
+              letterSpacing: '1px',
+              fontSize: '1.8rem',
+              transition: 'color 0.3s ease',
+              '&:hover': { color: '#ffd700' },
             }}
           >
             Vijaya AI
@@ -134,41 +115,23 @@ const Navbar = () => {
               >
                 Total Credits: ${credits}
               </Typography>
-              {isAuthenticated ? (
-                <Button
-                  color="inherit"
-                  onClick={handleLogout}
-                  sx={{
-                    mx: 1,
-                    fontWeight: 600,
-                    fontSize: '1rem',
-                    transition: 'color 0.3s ease, background 0.3s ease',
-                    '&:hover': {
-                      color: '#6a00f4',
-                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                    },
-                  }}
-                >
-                  Logout
-                </Button>
-              ) : (
-                <Button
-                  color="inherit"
-                  onClick={openDashboardInNewTab}
-                  sx={{
-                    mx: 1,
-                    fontWeight: 600,
-                    fontSize: '1rem',
-                    transition: 'color 0.3s ease, background 0.3s ease',
-                    '&:hover': {
-                      color: '#6a00f4',
-                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                    },
-                  }}
-                >
-                  Dashboard
-                </Button>
-              )}
+              {/* Always show Dashboard button */}
+              <Button
+                color="inherit"
+                onClick={openDashboardInNewTab}
+                sx={{
+                  mx: 1,
+                  fontWeight: 600,
+                  fontSize: '1rem',
+                  transition: 'color 0.3s ease, background 0.3s ease',
+                  '&:hover': {
+                    color: '#6a00f4',
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                  },
+                }}
+              >
+                Dashboard
+              </Button>
             </Box>
           )}
         </Toolbar>

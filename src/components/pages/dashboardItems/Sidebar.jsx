@@ -51,6 +51,7 @@ function Sidebar(props) {
    
   const handleLogout = () => {
     localStorage.removeItem('authToken');
+    localStorage.removeItem('username');
     setLoggedOut(true);
     navigate(0); // This should cause the component to re-render and simulate a fresh session.
   };
@@ -139,7 +140,7 @@ function Sidebar(props) {
         <Divider />
         <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
           <Avatar sx={{ width: 40, height: 40, mr: 2 }}>{username[0]}</Avatar>
-          <Typography variant="body1">@{username}</Typography> {/* Display username */}
+          <Typography variant="body1">@{username}</Typography> 
         </Box>
         
         <List>
