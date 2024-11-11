@@ -22,13 +22,15 @@ import { MdOutlineLogout } from 'react-icons/md';
 import FineTuning from './sidebarItems/FineTuning';
 import RAG from './sidebarItems/Rag';
 import Tools from './sidebarItems/Tools';
-import DBConnection from './sidebarItems/DbConnection';
+import DBConnection from './sidebarItems/DbConnection';4
+import { LiaToolsSolid } from "react-icons/lia";
 import { useNavigate } from 'react-router-dom'
 
 const drawerWidth = 240;
 
 function Sidebar(props) {
   const { window } = props;
+  const navigate = useNavigate()
   const [mobileOpen, setMobileOpen] = React.useState(false);
 
   const [selectedOption, setSelectedOption] = React.useState('Home');
@@ -45,15 +47,19 @@ function Sidebar(props) {
     setToolbarVisible(false);
   };
 
+  
+   
   const handleLogout = () => {
-    // Perform logout logic (e.g., clearing tokens, resetting user state)
     localStorage.removeItem('authToken');
-    localStorage.removeItem('username');
-    console.log("logout done");
-    setLoggedOut(true)
-    if(loggedOut){
-    window.open('/dashboard', '_blank');}
+    setLoggedOut(true);
+    navigate(0); // This should cause the component to re-render and simulate a fresh session.
   };
+  
+  // React.useEffect(() => {
+  //   if (loggedOut && typeof window !== 'undefined') {
+  //     navigate('/'); // Ensures navigation to '/' in case the effect triggers
+  //   }
+  // }, [loggedOut, navigate]);
 
 
   
@@ -113,9 +119,9 @@ function Sidebar(props) {
       <List>
         {[
           { text: 'Home', icon: <FiHome /> },
-          { text: 'Fine Tuning', icon: <FiSliders /> },  // Fine Tuning Icon
-          { text: 'RAG', icon: <FaConnectdevelop /> },           // RAG Icon for Retrieval-Augmented Generation
-          { text: 'Tools', icon: <FiSettings /> },       // Replacing FiTool with FiSettings for Tools
+          { text: 'Fine Tuning', icon: <FiSliders /> },  
+          { text: 'RAG', icon: <FaConnectdevelop /> },           
+          { text: 'Tools', icon: <LiaToolsSolid /> },      
           { text: 'DB Connection', icon: <FiDatabase /> },
         ].map(({ text, icon }) => (
           <ListItem key={text} disablePadding>
