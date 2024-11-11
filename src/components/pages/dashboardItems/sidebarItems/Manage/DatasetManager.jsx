@@ -4,12 +4,11 @@ import DatasetContent from './ManageContents/DatasetContent';
 import TrainingJobs from './ManageContents/TrainingJobs';
 import ModelArtifacts from './ManageContents/ModelArtifacts';
 import ServicesContent from './ManageContents/ServicesContent';
-import { useParams } from 'react-router-dom'; // To get the project_id from the URL
+import { useParams } from 'react-router-dom';
 
 export default function DatasetManager() {
   const [selectedSection, setSelectedSection] = useState('datasets');
-
-  const { project_id } = useParams(); // Extract project_id from URL
+  const { project_id } = useParams();
 
   const renderContent = () => {
     switch (selectedSection) {
@@ -27,38 +26,68 @@ export default function DatasetManager() {
   };
 
   return (
-    <Box sx={{ padding: '20px', width:"100rem"}}> {/* Overall padding */}
+    <Box 
+      sx={{ 
+        padding: '20px', 
+        width: '100rem',  // Original width for 17-inch screen
+        maxWidth: '100%', // Ensure it doesn’t exceed screen width
+        margin: '0 auto', // Center on smaller screens
+        '@media (max-width: 1440px)': { // Large screens
+          width: '80rem',
+          padding: '18px',
+        },
+        '@media (max-width: 1024px)': { // Medium screens like tablets
+          width: '60rem',
+          padding: '16px',
+        },
+        '@media (max-width: 768px)': { // Small screens like large phones
+          width: '100%',
+          padding: '14px',
+        },
+        '@media (max-width: 480px)': { // Extra-small screens
+          padding: '12px',
+        },
+      }}
+    >
       <Box 
         sx={{ 
           display: 'flex', 
-          justifyContent: 'center', // Center the buttons
+          justifyContent: 'center',
           gap: '32px', 
           marginBottom: '20px',
-          borderBottom: '2px solid #ddd', // Border below the button section
-          paddingBottom: '10px', // Padding below buttons for spacing
+          borderBottom: '2px solid #ddd',
+          paddingBottom: '10px',
+          flexDirection: { xs: 'column', sm: 'row' }, // Stack buttons on small screens
+          '@media (max-width: 768px)': { // Small screens
+            gap: '16px',
+          },
         }}
       >
         <Button
           variant={selectedSection === 'datasets' ? 'contained' : 'outlined'}
           onClick={() => setSelectedSection('datasets')}
+          fullWidth={{ xs: true, sm: false }}
         >
           Datasets
         </Button>
         <Button
           variant={selectedSection === 'trainingJobs' ? 'contained' : 'outlined'}
           onClick={() => setSelectedSection('trainingJobs')}
+          fullWidth={{ xs: true, sm: false }}
         >
           Training Jobs
         </Button>
         <Button
           variant={selectedSection === 'modelArtifacts' ? 'contained' : 'outlined'}
           onClick={() => setSelectedSection('modelArtifacts')}
+          fullWidth={{ xs: true, sm: false }}
         >
           Model Artifacts
         </Button>
         <Button
           variant={selectedSection === 'services' ? 'contained' : 'outlined'}
           onClick={() => setSelectedSection('services')}
+          fullWidth={{ xs: true, sm: false }}
         >
           Services
         </Button>
@@ -69,14 +98,30 @@ export default function DatasetManager() {
           height: 'calc(100vh - 200px)',
           overflow: 'auto',
           padding: '20px',
-          border: '1px solid #ddd', // Border around the content area
-          borderRadius: '8px', // Rounded corners for the content area
-          backgroundColor: '#fff', // Background color for the content area
-          boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)', // Soft shadow for the content area
+          border: '1px solid #ddd',
+          borderRadius: '8px',
+          backgroundColor: '#fff',
+          boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)',
+          '@media (max-width: 1440px)': { // Large screens
+            padding: '18px',
+            height: 'calc(100vh - 180px)',
+          },
+          '@media (max-width: 1024px)': { // Medium screens
+            padding: '16px',
+            height: 'calc(100vh - 160px)',
+          },
+          '@media (max-width: 768px)': { // Small screens
+            padding: '14px',
+            height: 'calc(100vh - 140px)',
+          },
+          '@media (max-width: 480px)': { // Extra-small screens
+            padding: '12px',
+            height: 'calc(100vh - 120px)',
+          },
         }}
       >
         {renderContent()}
       </Box>
     </Box>
   );
-} 
+}
