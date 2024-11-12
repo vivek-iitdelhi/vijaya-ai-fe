@@ -204,7 +204,7 @@ export default function ProjectDetailPage() {
             padding: '16px',
             maxHeight: '100%', // Take full available height
             overflowY: 'auto', // Enable scrolling for the grid
-            backgroundColor: '#ffffff',
+            backgroundColor: 'white',
             borderRadius: '8px',
             '@media (max-width: 1200px)': {
               gridTemplateColumns: 'repeat(3, 1fr)', // 3 columns on medium screens
@@ -217,7 +217,26 @@ export default function ProjectDetailPage() {
             },
           }}
         >
-          {projects.map((project) => (
+          {projects.length === 0 ? (
+            <Card
+              variant="outlined"
+              sx={{
+                padding: '16px',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                alignItems: 'center',
+                textAlign: 'center',
+                height: '200px',
+                backgroundColor: '#f0f0f0',
+                overflow:'auto'
+              }}
+            >
+              <Typography variant="h6" color="textSecondary">
+               Create your 1st project
+              </Typography>
+            </Card>
+          ) : (projects.map((project) => (
             <Card
               key={project.project_id}
               variant="outlined"
@@ -316,7 +335,7 @@ export default function ProjectDetailPage() {
                 </CardActions>
 
             </Card>
-          ))}
+          )))}
         </Box>
       </Box>
     </>

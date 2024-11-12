@@ -43,7 +43,8 @@ const LogIn = ({ onSuccess }) => {
         if (isLogin) {
           console.log("Login Success:", data);
           localStorage.setItem("authToken", data.token);
-          localStorage.setItem("username", formData.username); // Save username
+          const username = data.username || formData.email.split('@')[0];
+          localStorage.setItem("username", username); // Save username
           setErrorMessage('');
           onSuccess(); // Trigger modal close on success
           navigate("/dashboard");

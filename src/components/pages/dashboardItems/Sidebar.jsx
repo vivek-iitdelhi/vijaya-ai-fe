@@ -38,6 +38,7 @@ function Sidebar(props) {
   const [toolbarVisible, setToolbarVisible] = React.useState(true);
   const [loggedOut, setLoggedOut] = React.useState(false);
 
+
   const handleDrawerToggle = () => {
     setSidebarVisible(!sidebarVisible);
   };
@@ -65,9 +66,9 @@ function Sidebar(props) {
 
   
   
-  
 
-  const username = localStorage.getItem("username") || "User"; // Get username from local storage
+  const username = localStorage.getItem("username") || "User"; 
+
 
   const renderContent = () => {
     switch (selectedOption) {
