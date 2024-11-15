@@ -138,7 +138,7 @@ const DatasetContent = () => {
         startIcon={<AddIcon />}
         onClick={() => setIsDialogOpen(true)}
         sx={{
-          marginBottom: '20px',
+          marginBottom: '10px',
         }}
       >
         Add Dataset
@@ -166,7 +166,15 @@ const DatasetContent = () => {
         </DialogActions>
       </Dialog>
 
-      <TableContainer component={Paper} sx={{ borderRadius: '10px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', marginTop: '20px' }}>
+      <TableContainer component={Paper} 
+      sx={{
+        borderRadius: '10px',
+        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+        marginTop: '20px',
+        maxHeight: '620px', // Set a max height to make the content scrollable
+        overflowY: 'auto', // Enable vertical scroll
+      }}
+      >
   <Table sx={{ minWidth: 650 }} aria-label="datasets table">
     <TableHead>
       <TableRow>

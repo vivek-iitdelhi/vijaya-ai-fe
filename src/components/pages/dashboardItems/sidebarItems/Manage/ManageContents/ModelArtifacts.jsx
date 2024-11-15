@@ -136,6 +136,7 @@ const ModelArtifactsTable = () => {
           overflowY: "auto",
           mx: "auto", // Center the table horizontally
           maxWidth: "1500px", // Limit max width for better alignment
+          maxHeight:'620px'
         }}
       >
         <Table stickyHeader aria-label="model artifacts table">

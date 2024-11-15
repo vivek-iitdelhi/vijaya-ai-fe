@@ -1,7 +1,7 @@
 
 const Monitoring = () => {
   return (
-    <div>Monitoring</div>
+    <div>Lorem3455</div>
   )
 }
 

@@ -34,11 +34,12 @@ const ServicesContent = () => {
     <Box
       sx={{
         display: 'flex',
-        justifyContent: 'center', // Center horizontally
-        alignItems: 'flex-start', // Align to the top to avoid unnecessary space
-        minHeight: '100vh', // Ensure the container takes full viewport height
-        backgroundColor: '#f0f0f0', // Background color for the whole page
-        padding: 0, // Remove padding to eliminate excess space
+        justifyContent: 'center',
+        alignItems: 'flex-start', 
+        minHeight: '90vh', 
+        backgroundColor: '#f0f0f0', 
+        padding: 0, 
+        
       }}
     >
       {/* Main Content Box with improved styling */}
@@ -61,7 +62,7 @@ const ServicesContent = () => {
             backgroundColor: '#f8f9fa', // Light background for the header
             padding: '10px 20px', // Padding for clean appearance
             borderBottom: '2px solid #e0e0e0', // Border for separation
-            position: 'sticky', // Make the tabs sticky
+            position: 'relative', // Make the tabs sticky
             top: 0, // Stick to the top of the parent container
             zIndex: 1, // Ensure the tabs are on top
           }}
@@ -92,7 +93,6 @@ const ServicesContent = () => {
             padding: '16px', // Reduce padding for a more compact layout
             backgroundColor: '#f7f7f7', // Neutral background to make the content stand out
             borderRadius: '0 0 16px 16px', // Rounded corners on bottom for seamless look
-            overflow: 'auto', // Allow inner content to scroll if necessary
           }}
         >
           {renderContent()}

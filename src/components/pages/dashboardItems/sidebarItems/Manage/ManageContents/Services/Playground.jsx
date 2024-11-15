@@ -36,8 +36,7 @@ const Playground = () => {
       };
 
       setMessages((prevMessages) => [...prevMessages, botReply]);
-    } catch  {
-      
+    } catch {
       setMessages((prevMessages) => [...prevMessages, { text: 'Error: Failed to fetch response.', sender: 'bot' }]);
     }
 
@@ -61,7 +60,6 @@ const Playground = () => {
   
       const botResponse = response.data.response || 'New chat created.';
   
-      // Ignore any response like "Act like a helpful assistant"
       if (!botResponse.includes("Act like a helpful assistant")) {
         setMessages((prevMessages) => [...prevMessages, { text: botResponse, sender: 'bot' }]);
       }
@@ -69,7 +67,6 @@ const Playground = () => {
       setMessages((prevMessages) => [...prevMessages, { text: 'Error: Failed to create new chat.', sender: 'bot' }]);
     }
   };
-  
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -89,26 +86,26 @@ const Playground = () => {
       sx={{
         display: 'flex',
         flexDirection: 'column',
-        height: '100vh',
+        height: '100%',
         padding: '20px',
         background: 'linear-gradient(135deg, #f6f9fc, #e9f3fa)',
         fontFamily: 'Arial, sans-serif',
-        overflow: 'hidden',
+        overflow: 'auto',
       }}
     >
       <Paper
         sx={{
           display: 'flex',
-          position: 'sticky',
           flexDirection: 'column',
           borderRadius: '25px',
           overflow: 'hidden',
           boxShadow: '0px 10px 30px rgba(0, 0, 0, 0.1)',
-          maxWidth: '800px',
           width: '100%',
-          height: '65vh',
+          height: '100%',
+          maxHeight: '100vh',
           margin: '0 auto',
           backgroundColor: '#ffffff',
+          position: 'sticky',
         }}
       >
         {/* "New Chat Window" Button in the top-right corner */}

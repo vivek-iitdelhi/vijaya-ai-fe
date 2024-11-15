@@ -49,7 +49,7 @@ export default function DatasetManager() {
         },
       }}
     >
-      
+
       <Box 
         sx={{ 
           display: 'flex', 
@@ -97,7 +97,7 @@ export default function DatasetManager() {
       <Box
         sx={{
           height: 'calc(100vh - 200px)',
-          overflow: 'auto',
+          overflow: 'hidden',
           padding: '20px',
           border: '1px solid #ddd',
           borderRadius: '8px',

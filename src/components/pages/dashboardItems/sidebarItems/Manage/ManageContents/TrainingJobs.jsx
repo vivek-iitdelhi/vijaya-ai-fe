@@ -214,6 +214,8 @@ export default function TrainingJobs() {
         sx={{
           borderRadius: '10px',
           boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+          maxHeight:'620px',
+          overflowY:'auto'
         }}
       >
         <Table stickyHeader aria-label="training jobs table">
