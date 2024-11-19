@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Box, Button, TextField, MenuItem, Select, Paper } from '@mui/material';
+import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 
 const Playground = () => {
@@ -48,7 +49,7 @@ const Playground = () => {
     setMessages([]);
     setCurrentMessage('');
     setSelectedDeployment('GPT-3');
-  
+
     try {
       const response = await axios.post(url, {
         text: "!!new_chat",
@@ -57,9 +58,9 @@ const Playground = () => {
           'Content-Type': 'application/json',
         },
       });
-  
+
       const botResponse = response.data.response || 'New chat created.';
-  
+
       if (!botResponse.includes("Act like a helpful assistant")) {
         setMessages((prevMessages) => [...prevMessages, { text: botResponse, sender: 'bot' }]);
       }
@@ -83,10 +84,15 @@ const Playground = () => {
 
   return (
     <Box
+      component={motion.div}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.1 }}
       sx={{
         display: 'flex',
         flexDirection: 'column',
-        height: '100%',
+        height: '70%',
         padding: '20px',
         background: 'linear-gradient(135deg, #f6f9fc, #e9f3fa)',
         fontFamily: 'Arial, sans-serif',
@@ -94,22 +100,28 @@ const Playground = () => {
       }}
     >
       <Paper
+        component={motion.div}
+        initial={{ scale: 0.9 }}
+        animate={{ scale: 1 }}
+        transition={{ duration: 0.1, type: 'spring' }}
         sx={{
           display: 'flex',
           flexDirection: 'column',
-          borderRadius: '25px',
-          overflow: 'hidden',
+          borderRadius: '20px',
+          overflow: 'auto',
           boxShadow: '0px 10px 30px rgba(0, 0, 0, 0.1)',
-          width: '100%',
+          width: '75%',
           height: '100%',
-          maxHeight: '100vh',
+          maxHeight: 'calc(100vh - 350px)', // Prevent chat window from overlapping
           margin: '0 auto',
           backgroundColor: '#ffffff',
-          position: 'sticky',
+          position: 'fixed', 
         }}
       >
-        {/* "New Chat Window" Button in the top-right corner */}
         <Button
+          component={motion.div}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.95 }}
           variant="contained"
           color="primary"
           onClick={handleCreateNewChatWindow}
@@ -175,51 +187,53 @@ const Playground = () => {
             flexDirection: 'column',
             backgroundColor: '#fafafa',
             borderBottom: '1px solid #ddd',
-            '::-webkit-scrollbar': {
-              width: '8px',
-            },
-            '::-webkit-scrollbar-thumb': {
-              backgroundColor: '#ddd',
-              borderRadius: '8px',
-            },
           }}
           onScroll={() => setShouldScroll(false)}
         >
-          {messages.map((msg, index) => (
-            <Box
-              key={index}
-              sx={{
-                display: 'flex',
-                justifyContent: msg.sender === 'user' ? 'flex-end' : 'flex-start',
-                marginBottom: '12px',
-              }}
-            >
-              <Box
-                sx={{
-                  backgroundColor: msg.sender === 'user' ? '#007aff' : '#e0e0e0',
-                  color: msg.sender === 'user' ? '#fff' : '#000',
-                  borderRadius: '20px',
-                  padding: '14px 20px',
-                  maxWidth: '70%',
-                  boxShadow: '0px 6px 15px rgba(0, 0, 0, 0.1)',
-                  wordWrap: 'break-word',
-                  fontSize: '16px',
-                  fontFamily: "'Roboto', sans-serif",
-                  transition: 'transform 0.2s ease',
-                  '&:hover': {
-                    transform: 'scale(1.02)',
-                  },
-                }}
+          <AnimatePresence>
+            {messages.map((msg, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, x: msg.sender === 'user' ? 50 : -50 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3, ease: 'easeInOut' }}
               >
-                {msg.text}
-              </Box>
-            </Box>
-          ))}
+                <Box
+                  sx={{
+                    display: 'flex',
+                    justifyContent: msg.sender === 'user' ? 'flex-end' : 'flex-start',
+                    marginBottom: '12px',
+                  }}
+                >
+                  <Box
+                    sx={{
+                      backgroundColor: msg.sender === 'user' ? '#007aff' : '#e0e0e0',
+                      color: msg.sender === 'user' ? '#fff' : '#000',
+                      borderRadius: '20px',
+                      padding: '14px 20px',
+                      maxWidth: '70%',
+                      boxShadow: '0px 6px 15px rgba(0, 0, 0, 0.1)',
+                      wordWrap: 'break-word',
+                      fontSize: '16px',
+                      fontFamily: "'Roboto', sans-serif",
+                    }}
+                  >
+                    {msg.text}
+                  </Box>
+                </Box>
+              </motion.div>
+            ))}
+          </AnimatePresence>
           <div ref={lastMessageRef}></div>
         </Box>
 
         {/* Message Input Area */}
         <Box
+          component={motion.div}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
           sx={{
             display: 'flex',
             alignItems: 'flex-start',
@@ -237,7 +251,7 @@ const Playground = () => {
             value={currentMessage}
             onChange={(e) => {
               setCurrentMessage(e.target.value);
-              setShouldScroll(false); // Stop scrolling when typing
+              setShouldScroll(false);
             }}
             onKeyPress={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) {
@@ -259,9 +273,7 @@ const Playground = () => {
                   border: 'none',
                 },
               },
-              boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.08)',
-              fontFamily: "'Roboto', sans-serif",
-              fontSize: '16px',
+              boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)',
             }}
           />
           <Button
@@ -269,17 +281,11 @@ const Playground = () => {
             color="primary"
             onClick={handleSendMessage}
             sx={{
-              backgroundColor: '#007aff',
-              color: '#fff',
-              padding: '10px 20px',
-              boxShadow: '0px 6px 12px rgba(0, 0, 0, 0.15)',
-              borderRadius: '50px',
-              textTransform: 'none',
+              padding: '8px 20px',
+              fontSize: '14px',
               fontWeight: 'bold',
-              transition: 'background-color 0.3s ease',
-              '&:hover': {
-                backgroundColor: '#0067d9',
-              },
+              boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)',
+              textTransform: 'none',
             }}
           >
             Send

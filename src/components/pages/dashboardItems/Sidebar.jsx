@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'framer-motion'; // Import Framer Motion
 import PropTypes from 'prop-types';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
@@ -10,8 +11,6 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
-// import MenuIcon from '@mui/icons-material/Menu';
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import Avatar from '@mui/material/Avatar';
@@ -22,22 +21,32 @@ import { MdOutlineLogout } from 'react-icons/md';
 import FineTuning from './sidebarItems/FineTuning';
 import RAG from './sidebarItems/Rag';
 import Tools from './sidebarItems/Tools';
-import DBConnection from './sidebarItems/DbConnection';4
+import DBConnection from './sidebarItems/DbConnection';
 import { LiaToolsSolid } from "react-icons/lia";
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom';
 
 const drawerWidth = 240;
 
+// Animation Variants
+const sidebarVariants = {
+  open: { x: 0, transition: { duration: 0.5 } },
+  closed: { x: -drawerWidth, transition: { duration: 0.5 } },
+};
+
+const contentVariants = {
+  initial: { opacity: 0, x: 50 },
+  animate: { opacity: 1, x: 0, transition: { duration: 0.3 } },
+  exit: { opacity: 0, x: -50, transition: { duration: 0.3 } },
+};
+
 function Sidebar(props) {
   const { window } = props;
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = React.useState(false);
 
   const [selectedOption, setSelectedOption] = React.useState('Home');
   const [sidebarVisible, setSidebarVisible] = React.useState(true);
   const [toolbarVisible, setToolbarVisible] = React.useState(true);
-  const [loggedOut, setLoggedOut] = React.useState(false);
-
 
   const handleDrawerToggle = () => {
     setSidebarVisible(!sidebarVisible);
@@ -48,27 +57,13 @@ function Sidebar(props) {
     setToolbarVisible(false);
   };
 
-  
-   
   const handleLogout = () => {
     localStorage.removeItem('authToken');
     localStorage.removeItem('username');
-    setLoggedOut(true);
-    navigate(0); // This should cause the component to re-render and simulate a fresh session.
+    navigate(0); // Refresh to simulate a fresh session.
   };
-  
-  // React.useEffect(() => {
-  //   if (loggedOut && typeof window !== 'undefined') {
-  //     navigate('/'); // Ensures navigation to '/' in case the effect triggers
-  //   }
-  // }, [loggedOut, navigate]);
 
-
-  
-  
-
-  const username = localStorage.getItem("username") || "User"; 
-
+  const username = localStorage.getItem("username") || "User";
 
   const renderContent = () => {
     switch (selectedOption) {
@@ -88,85 +83,81 @@ function Sidebar(props) {
   };
 
   const drawer = (
-    <div style={{ paddingTop: '10px', display: 'flex', flexDirection: 'column', height: '100%' }}>
-      {/* Username and Menu Icon */}
-      <IconButton
-      color="inherit"
-      aria-label="open drawer"
-      edge="start"
-      onClick={handleDrawerToggle}
-      sx={{
-        marginX:'0px',
-        gap:'75px',
-        display: 'flex',
-        alignItems: 'center',
-        background: 'white', 
-        borderRadius: '0.5rem', 
-        padding: '0.5rem', 
-        width: '100%',
-        justifyContent: 'flex-start', // Aligns content to the left
-        '&:hover': {
-          backgroundColor: 'white',
-        },
-      }}
+    <motion.div
+      initial="closed"
+      animate={sidebarVisible ? 'open' : 'closed'}
+      variants={sidebarVariants}
+      style={{ height: '100%' }}
     >
-      Dashboard
-
-      <MdMenuOpen />
-    </IconButton>
-
-      <Divider />
-
-      {/* Main Navigation List with Icons */}
-      <List>
-        {[
-          { text: 'Home', icon: <FiHome /> },
-          { text: 'Fine Tuning', icon: <FiSliders /> },  
-          { text: 'RAG', icon: <FaConnectdevelop /> },           
-          { text: 'Tools', icon: <LiaToolsSolid /> },      
-          { text: 'DB Connection', icon: <FiDatabase /> },
-        ].map(({ text, icon }) => (
-          <ListItem key={text} disablePadding>
-            <ListItemButton onClick={() => handleOptionClick(text)}>
-              {icon} {/* Icon from react-icons */}
-              <ListItemText primary={text} sx={{ ml: 2 }} />
-            </ListItemButton>
-          </ListItem>
-        ))}
-      </List>
-
-      {/* User Profile Section at the Bottom */}
-      <Box sx={{ mt: 'auto', p: 2 }}>
-      <h2>User Details</h2>
+      <div style={{ paddingTop: '10px', display: 'flex', flexDirection: 'column', height: '100%' }}>
+        <IconButton
+          color="inherit"
+          aria-label="open drawer"
+          edge="start"
+          onClick={handleDrawerToggle}
+          sx={{
+            marginX: '0px',
+            gap: '75px',
+            display: 'flex',
+            alignItems: 'center',
+            background: 'white',
+            borderRadius: '0.5rem',
+            padding: '0.5rem',
+            width: '100%',
+            justifyContent: 'flex-start',
+            '&:hover': { backgroundColor: 'white' },
+          }}
+        >
+          Dashboard
+          <MdMenuOpen />
+        </IconButton>
         <Divider />
-        <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
-          <Avatar sx={{ width: 40, height: 40, mr: 2 }}>{username[0]}</Avatar>
-          <Typography variant="body1">@{username}</Typography> 
-        </Box>
-        
         <List>
-          <ListItem disablePadding>
-            
-            <ListItemButton>
-              <FiUser /> {/* Profile icon */}
-              <ListItemText primary="Profile" sx={{ ml: 2 }} />
-            </ListItemButton>
-          </ListItem>
-          <ListItem disablePadding>
-            <ListItemButton>
-              <FiSettings /> {/* Settings icon */}
-              <ListItemText primary="Settings" sx={{ ml: 2 }} />
-            </ListItemButton>
-          </ListItem>
-          <ListItem disablePadding>
-            <ListItemButton onClick={handleLogout}>
-              <MdOutlineLogout /> {/* Logout icon */}
-              <ListItemText primary="Logout" sx={{ ml: 2 }} />
-            </ListItemButton>
-          </ListItem>
+          {[
+            { text: 'Home', icon: <FiHome /> },
+            { text: 'Fine Tuning', icon: <FiSliders /> },
+            { text: 'RAG', icon: <FaConnectdevelop /> },
+            { text: 'Tools', icon: <LiaToolsSolid /> },
+            { text: 'DB Connection', icon: <FiDatabase /> },
+          ].map(({ text, icon }) => (
+            <ListItem key={text} disablePadding>
+              <ListItemButton onClick={() => handleOptionClick(text)}>
+                {icon}
+                <ListItemText primary={text} sx={{ ml: 2 }} />
+              </ListItemButton>
+            </ListItem>
+          ))}
         </List>
-      </Box>
-    </div>
+        <Box sx={{ mt: 'auto', p: 2 }}>
+          <h2>User Details</h2>
+          <Divider />
+          <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
+            <Avatar sx={{ width: 40, height: 40, mr: 2 }}>{username[0]}</Avatar>
+            <Typography variant="body1">@{username}</Typography>
+          </Box>
+          <List>
+            <ListItem disablePadding>
+              <ListItemButton>
+                <FiUser />
+                <ListItemText primary="Profile" sx={{ ml: 2 }} />
+              </ListItemButton>
+            </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton>
+                <FiSettings />
+                <ListItemText primary="Settings" sx={{ ml: 2 }} />
+              </ListItemButton>
+            </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton onClick={handleLogout}>
+                <MdOutlineLogout />
+                <ListItemText primary="Logout" sx={{ ml: 2 }} />
+              </ListItemButton>
+            </ListItem>
+          </List>
+        </Box>
+      </div>
+    </motion.div>
   );
 
   const container = window !== undefined ? () => window().document.body : undefined;
@@ -182,8 +173,6 @@ function Sidebar(props) {
           display: toolbarVisible ? 'flex' : 'none',
         }}
       />
-
-      {/* Sidebar Drawer */}
       <Box
         component="nav"
         sx={{
@@ -198,9 +187,7 @@ function Sidebar(props) {
           variant="temporary"
           open={mobileOpen}
           onClose={handleDrawerToggle}
-          ModalProps={{
-            keepMounted: true,
-          }}
+          ModalProps={{ keepMounted: true }}
           sx={{
             display: { xs: 'block', sm: 'none' },
             '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
@@ -219,8 +206,6 @@ function Sidebar(props) {
           {drawer}
         </Drawer>
       </Box>
-
-      {/* Sidebar toggle button */}
       {!sidebarVisible && (
         <IconButton
           color="primary"
@@ -236,19 +221,20 @@ function Sidebar(props) {
           <ChevronLeftIcon />
         </IconButton>
       )}
-
-      {/* Main content */}
-      <Box
-        component="main"
-        sx={{
+      <motion.div
+        initial="initial"
+        animate="animate"
+        exit="exit"
+        variants={contentVariants}
+        style={{
           flexGrow: 1,
-          p: 3,
-          width: sidebarVisible ? { sm: `calc(100% - ${drawerWidth}px)` } : '100%',
+          padding: '1.5rem',
+          width: sidebarVisible ? `calc(100% - ${drawerWidth}px)` : '100%',
         }}
       >
         <Toolbar />
         {renderContent()}
-      </Box>
+      </motion.div>
     </Box>
   );
 }

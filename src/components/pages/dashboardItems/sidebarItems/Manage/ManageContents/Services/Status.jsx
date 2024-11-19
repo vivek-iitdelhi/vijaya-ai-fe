@@ -132,8 +132,7 @@ export default function Status() {
               </List>
             )}
           </Box>
-
-          {/* Deployment Name Input */}
+          
           <TextField
             label="Deployment Name"
             fullWidth
@@ -142,7 +141,7 @@ export default function Status() {
             sx={{ marginBottom: '20px' }}
           />
 
-          {/* Deploy Button */}
+          
           <Button
             variant="contained"
             color="primary"
@@ -150,7 +149,7 @@ export default function Status() {
             onClick={handleDeploy}
             sx={{ borderRadius: '12px' }}
           >
-            Deploy
+        Deploy
           </Button>
         </Paper>
       </Grid>
