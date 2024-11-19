@@ -106,10 +106,8 @@ export default function TrainingJobs() {
     // Mock parameter data for selected base model
     if (selectedModelId) {
       setParameters([
-        { name: 'Learning Rate', value: '0.05' },
-        { name: 'Batch Size', value: '3' },
-        { name: 'Epochs', value: 'fg127gb' },
-        { name: 'Dropout Rate', value: '23%' }
+        { name: 'Learning Rate', value: '0.04' },
+        { name: 'Batch Size', value: '4' },
       ]);
     } else {
       setParameters([]);
