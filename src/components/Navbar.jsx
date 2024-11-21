@@ -16,25 +16,48 @@ import { useMediaQuery } from '@mui/material';
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [credits, setCredits] = useState(null); // Initially null to indicate loading
+  const [error, setError] = useState(null); // To handle errors for credits
+
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const getToken = () => localStorage.getItem('authToken');
 
-  // Dummy credit data (placeholder)
-  const [credits, setCredits] = useState(100); // This can be replaced with API data in the future
-
-  // Function to toggle drawer
   const handleDrawerToggle = () => {
     setMenuOpen(!menuOpen);
   };
 
-  // Function to open the dashboard in a new tab
   const openDashboardInNewTab = () => {
     window.open('/dashboard', '_blank');
   };
 
   useEffect(() => {
-    // No authentication-related effects anymore
+    const fetchCredits = async () => {
+      try {
+        const token = getToken(); 
+
+        const response = await fetch(`${import.meta.env.VITE_HOST_URL}/credits/`, {
+          headers: {
+            Authorization: `Token ${token}`,
+            "ngrok-skip-browser-warning": "69420"
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`Error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        setCredits(data.total_credits); 
+      } catch (err) {
+        setError('Failed to load credits');
+        console.error(err);
+      }
+    };
+
+    fetchCredits();
   }, []);
+
 
   const drawer = (
     <Box
@@ -113,9 +136,8 @@ const Navbar = () => {
                   mr: 2,
                 }}
               >
-                Total Credits: ${credits}
+                {error ? error : credits !== null ? `Total Credits: $${credits}` : 'Loading...'}
               </Typography>
-              {/* Always show Dashboard button */}
               <Button
                 color="inherit"
                 onClick={openDashboardInNewTab}
