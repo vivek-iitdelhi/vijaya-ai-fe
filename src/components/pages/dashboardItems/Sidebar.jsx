@@ -25,6 +25,11 @@ import DBConnection from './sidebarItems/DbConnection';
 import { LiaToolsSolid } from "react-icons/lia";
 import { useNavigate } from 'react-router-dom';
 
+
+// Import ChevronLeftIcon from Material-UI
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import HomeWithDragDropContext from './sidebarItems/Home';
+
 const drawerWidth = 240;
 
 // Animation Variants
@@ -68,7 +73,7 @@ function Sidebar(props) {
   const renderContent = () => {
     switch (selectedOption) {
       case 'Home':
-        return <Typography variant="h6">Welcome to the Home section!</Typography>;
+        return <HomeWithDragDropContext/>
       case 'Fine Tuning':
         return <FineTuning />;
       case 'RAG':
@@ -113,7 +118,7 @@ function Sidebar(props) {
         </IconButton>
         <Divider />
         <List>
-          {[
+          {[ 
             { text: 'Home', icon: <FiHome /> },
             { text: 'Fine Tuning', icon: <FiSliders /> },
             { text: 'RAG', icon: <FaConnectdevelop /> },
