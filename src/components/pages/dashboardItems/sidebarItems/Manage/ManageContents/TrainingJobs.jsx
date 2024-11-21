@@ -26,10 +26,12 @@ const getToken = () => localStorage.getItem('authToken');
 const API_BASE_URL = `${import.meta.env.VITE_HOST_URL}/basemodels/`;
 const API_TRAINING_JOBS_URL = `${import.meta.env.VITE_HOST_URL}/trainingjobs/`;
 const API_DATASETS_URL = `${import.meta.env.VITE_HOST_URL}/datasets/`;
+const API_CREDITS_URL = `${import.meta.env.VITE_HOST_URL}/credits/`;
 
 export default function TrainingJobs() {
   const { project_id } = useParams();
   const [openModal, setOpenModal] = useState(false);
+  const [openErrorModal, setOpenErrorModal] = useState(false); // For error modal
   const [searchQuery, setSearchQuery] = useState('');
   const [jobs, setJobs] = useState([]);
   const [baseModels, setBaseModels] = useState([]);
@@ -38,7 +40,8 @@ export default function TrainingJobs() {
   const [datasetTrain, setDatasetTrain] = useState('');
   const [datasetTest, setDatasetTest] = useState('');
   const [jobName, setJobName] = useState('');
-  const [parameters, setParameters] = useState([]); // Added state for parameters
+  const [parameters, setParameters] = useState([]);
+  const [currentCredits, setCurrentCredits] = useState(0);
 
   useEffect(() => {
     const fetchBaseModels = async () => {
@@ -47,7 +50,7 @@ export default function TrainingJobs() {
         const response = await axios.get(API_BASE_URL, {
           headers: {
             Authorization: `Token ${token}`,
-            "ngrok-skip-browser-warning": "69420"
+            'ngrok-skip-browser-warning': '69420',
           },
         });
         setBaseModels(response.data);
@@ -62,7 +65,7 @@ export default function TrainingJobs() {
         const response = await axios.get(`${API_TRAINING_JOBS_URL}?project_id=${project_id}`, {
           headers: {
             Authorization: `Token ${token}`,
-            "ngrok-skip-browser-warning": "69420"
+            'ngrok-skip-browser-warning': '69420',
           },
         });
         setJobs(response.data);
@@ -77,7 +80,7 @@ export default function TrainingJobs() {
         const response = await axios.get(`${API_DATASETS_URL}?project_id=${project_id}`, {
           headers: {
             Authorization: `Token ${token}`,
-            "ngrok-skip-browser-warning": "69420"
+            'ngrok-skip-browser-warning': '69420',
           },
         });
         setDatasets(response.data);
@@ -86,24 +89,40 @@ export default function TrainingJobs() {
       }
     };
 
+    const fetchCurrentCredits = async () => {
+      try {
+        const token = getToken();
+        const response = await axios.get(API_CREDITS_URL, {
+          headers: {
+            Authorization: `Token ${token}`,
+            'ngrok-skip-browser-warning': '69420',
+          },
+        });
+        setCurrentCredits(response.data.current_credits);
+      } catch (error) {
+        console.error('Error fetching credits:', error);
+      }
+    };
+
     fetchBaseModels();
     fetchTrainingJobs();
     fetchDatasets();
+    fetchCurrentCredits();
 
-    const intervalId = setInterval(fetchTrainingJobs, 30000); // Refresh every 30 seconds
+    const intervalId = setInterval(fetchTrainingJobs, 30000);
 
-    // Clear the interval when the component is unmounted
     return () => clearInterval(intervalId);
   }, [project_id]);
 
   const handleOpenModal = () => setOpenModal(true);
   const handleCloseModal = () => setOpenModal(false);
+  const handleOpenErrorModal = () => setOpenErrorModal(true);
+  const handleCloseErrorModal = () => setOpenErrorModal(false);
 
   const handleBaseModelChange = (event) => {
     const selectedModelId = event.target.value;
     setBaseModel(selectedModelId);
 
-    // Mock parameter data for selected base model
     if (selectedModelId) {
       setParameters([
         { name: 'Learning Rate', value: '0.04' },
@@ -125,17 +144,23 @@ export default function TrainingJobs() {
   );
 
   const handleCreateJob = async () => {
+    if (currentCredits < 5) {
+      // If credits are insufficient, show error modal
+      handleOpenErrorModal();
+      return;
+    }
+
     const newJob = {
       training_job_name: jobName,
       status: 'pending',
       model_id: baseModel,
       train_dataset_id: datasetTrain,
-      test_dataset_id: datasetTest,   
+      test_dataset_id: datasetTest,
       project_id: project_id,
       parameters: parameters.reduce((acc, param) => {
         acc[param.name] = param.value;
         return acc;
-      }, {})
+      }, {}),
     };
 
     try {
@@ -143,29 +168,31 @@ export default function TrainingJobs() {
       const response = await axios.post(API_TRAINING_JOBS_URL, newJob, {
         headers: {
           Authorization: `Token ${token}`,
+          'ngrok-skip-browser-warning': '69420',
         },
       });
 
-      setJobs((prevJobs) => [...prevJobs, response.data]);
-      handleCloseModal();
-      setJobName('');
-      setBaseModel('');
-      setDatasetTrain('');
-      setDatasetTest('');
-      setParameters([]); // Clear parameters
+      if (response.status === 201) { // Success!
+        setJobs((prevJobs) => [...prevJobs, response.data]);
+        handleCloseModal();
+        setJobName('');
+        setBaseModel('');
+        setDatasetTrain('');
+        setDatasetTest('');
+        setParameters([]);
+      } else if (response.status === 402) {
+        handleOpenErrorModal(response.data.error); // Pass the error message
+      } else {
+        handleOpenErrorModal(`An unexpected error occurred: ${response.status}`);
+      }
     } catch (error) {
       console.error('Error creating new training job:', error);
+      handleOpenErrorModal('An unexpected error occurred. Please try again later.');
     }
   };
 
   return (
-    <Box
-      sx={{
-        padding: '20px',
-        backgroundColor: '#ffffff',
-        minHeight: '100vh',
-      }}
-    >
+    <Box sx={{ padding: '20px', backgroundColor: '#ffffff', minHeight: '100vh' }}>
       <Box
         sx={{
           display: 'flex',
@@ -207,30 +234,14 @@ export default function TrainingJobs() {
         </Button>
       </Box>
 
-      <TableContainer
-        component={Paper}
-        sx={{
-          borderRadius: '10px',
-          boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-          maxHeight:'620px',
-          overflowY:'auto'
-        }}
-      >
+      <TableContainer component={Paper} sx={{ borderRadius: '10px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', maxHeight: '620px', overflowY: 'auto' }}>
         <Table stickyHeader aria-label="training jobs table">
           <TableHead>
             <TableRow>
-              <TableCell sx={{ fontWeight: 'bold', backgroundColor: '#3f51b5', color: '#fff' }}>
-                Job Name
-              </TableCell>
-              <TableCell sx={{ fontWeight: 'bold', backgroundColor: '#3f51b5', color: '#fff' }}>
-                Base Model
-              </TableCell>
-              <TableCell sx={{ fontWeight: 'bold', backgroundColor: '#3f51b5', color: '#fff' }}>
-                Train Dataset
-              </TableCell>
-              <TableCell sx={{ fontWeight: 'bold', backgroundColor: '#3f51b5', color: '#fff' }}>
-                Status
-              </TableCell>
+              <TableCell sx={{ fontWeight: 'bold', backgroundColor: '#3f51b5', color: '#fff' }}>Job Name</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', backgroundColor: '#3f51b5', color: '#fff' }}>Base Model</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', backgroundColor: '#3f51b5', color: '#fff' }}>Train Dataset</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', backgroundColor: '#3f51b5', color: '#fff' }}>Status</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -246,12 +257,8 @@ export default function TrainingJobs() {
         </Table>
       </TableContainer>
 
-      <Modal
-        open={openModal}
-        onClose={handleCloseModal}
-        aria-labelledby="modal-title"
-        aria-describedby="modal-description"
-      >
+      {/* Create Job Modal */}
+      <Modal open={openModal} onClose={handleCloseModal} aria-labelledby="modal-title" aria-describedby="modal-description">
         <Box
           sx={{
             width: 400,
@@ -266,23 +273,11 @@ export default function TrainingJobs() {
           <Typography id="modal-title" variant="h6" gutterBottom>
             Create New Training Job
           </Typography>
-          <TextField
-            label="Job Name"
-            fullWidth
-            margin="normal"
-            value={jobName}
-            onChange={(e) => setJobName(e.target.value)}
-          />
+          <TextField label="Job Name" fullWidth margin="normal" value={jobName} onChange={(e) => setJobName(e.target.value)} />
 
           <FormControl fullWidth margin="normal">
             <InputLabel id="base-model-select-label">Base Model</InputLabel>
-            <Select
-              labelId="base-model-select-label"
-              id="base-model-select"
-              value={baseModel}
-              label="Base Model"
-              onChange={handleBaseModelChange}
-            >
+            <Select labelId="base-model-select-label" id="base-model-select" value={baseModel} label="Base Model" onChange={handleBaseModelChange}>
               {baseModels.map((model) => (
                 <MenuItem key={model.model_id} value={model.model_id}>
                   {model.model_name}
@@ -293,13 +288,7 @@ export default function TrainingJobs() {
 
           <FormControl fullWidth margin="normal">
             <InputLabel id="train-dataset-select-label">Train Dataset</InputLabel>
-            <Select
-              labelId="train-dataset-select-label"
-              id="train-dataset-select"
-              value={datasetTrain}
-              label="Train Dataset"
-              onChange={(e) => setDatasetTrain(e.target.value)}
-            >
+            <Select labelId="train-dataset-select-label" id="train-dataset-select" value={datasetTrain} label="Train Dataset" onChange={(e) => setDatasetTrain(e.target.value)}>
               {datasets.map((dataset) => (
                 <MenuItem key={dataset.dataset_id} value={dataset.dataset_id}>
                   {dataset.dataset_name}
@@ -310,13 +299,7 @@ export default function TrainingJobs() {
 
           <FormControl fullWidth margin="normal">
             <InputLabel id="test-dataset-select-label">Test Dataset</InputLabel>
-            <Select
-              labelId="test-dataset-select-label"
-              id="test-dataset-select"
-              value={datasetTest}
-              label="Test Dataset"
-              onChange={(e) => setDatasetTest(e.target.value)}
-            >
+            <Select labelId="test-dataset-select-label" id="test-dataset-select" value={datasetTest} label="Test Dataset" onChange={(e) => setDatasetTest(e.target.value)}>
               {datasets.map((dataset) => (
                 <MenuItem key={dataset.dataset_id} value={dataset.dataset_id}>
                   {dataset.dataset_name}
@@ -336,13 +319,44 @@ export default function TrainingJobs() {
             />
           ))}
 
+          <Button variant="contained" fullWidth onClick={handleCreateJob} sx={{ marginTop: '20px', borderRadius: '20px' }}>
+            Create Job
+          </Button>
+        </Box>
+      </Modal>
+
+      {/* Error Modal for Insufficient Credits */}
+      <Modal open={openErrorModal} onClose={handleCloseErrorModal}>
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: 400,
+            backgroundColor: '#fff',
+            padding: '20px',
+            borderRadius: '8px',
+            boxShadow: 24,
+            textAlign: 'center',
+          }}
+        >
+          <Typography variant="h6" sx={{ marginBottom: '20px' }}>
+            You don't have enough credits to create a new job!
+          </Typography>
           <Button
             variant="contained"
-            fullWidth
-            onClick={handleCreateJob}
-            sx={{ marginTop: '20px', borderRadius: '20px' }}
+            color="primary"
+            sx={{
+              width: '100%',
+              borderRadius: '20px',
+              padding: '10px',
+              backgroundColor: '#1976d2',
+            }}
+            href="https://calendly.com/vivek-vijaya/30min"
+            target="_blank"
           >
-            Create Job
+            Add Credits
           </Button>
         </Box>
       </Modal>
