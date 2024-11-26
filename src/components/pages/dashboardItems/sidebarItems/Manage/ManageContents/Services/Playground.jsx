@@ -2,19 +2,53 @@ import { useState, useEffect, useRef } from 'react';
 import { Box, Button, TextField, MenuItem, Select, Paper } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
+import { useParams } from 'react-router-dom';
 
 const Playground = () => {
   const [messages, setMessages] = useState([]);
   const [currentMessage, setCurrentMessage] = useState('');
-  const [selectedDeployment, setSelectedDeployment] = useState('GPT-3');
+  const [deployments, setDeployments] = useState([]);
+  const [selectedDeployment, setSelectedDeployment] = useState('');
   const [shouldScroll, setShouldScroll] = useState(true);
 
-  const dummyDeployments = ['GPT-3', 'LLaMA', 'ChatGPT', 'Claude'];
+  const { project_id } = useParams(); // Get project_id from URL
   const textareaRef = useRef(null);
   const lastMessageRef = useRef(null);
-  const url = "https://rbea5pj4f9gk98-8000.proxy.runpod.net/generate/";
 
-  // Function to handle sending messages
+  const url = `${import.meta.env.VITE_HOST_URL}/deployments/`;
+  const token = localStorage.getItem('authToken');
+
+  // Fetch deployment models
+  const fetchDeployments = async () => {
+    try {
+      const response = await axios.get(url, {
+        headers: {
+          Authorization: `Token ${token}`,
+          'ngrok-skip-browser-warning': '69420',
+        },
+        params: { project_id },
+      });
+
+      const successfulDeployments = response.data.filter(
+        (deployment) => deployment.status === 'Deployed'
+      );
+      setDeployments(successfulDeployments);
+
+      if (!successfulDeployments.find((d) => d.instance_name === selectedDeployment)) {
+        setSelectedDeployment(successfulDeployments[0]?.instance_name || '');
+      }
+    } catch (error) {
+      console.error('Error fetching deployments:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchDeployments();
+    const interval = setInterval(fetchDeployments, 30000); // Poll every 30 seconds
+    return () => clearInterval(interval); // Cleanup on unmount
+  }, [project_id]);
+
+  // Handle sending messages
   const handleSendMessage = async () => {
     if (currentMessage.trim() === '') return;
 
@@ -23,13 +57,16 @@ const Playground = () => {
     setCurrentMessage('');
 
     try {
-      const response = await axios.post(url, {
-        text: currentMessage,
-      }, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      const response = await axios.post(
+        url,
+        { text: currentMessage },
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
 
       const botReply = {
         text: response.data.response || 'Error: No response from server.',
@@ -38,34 +75,42 @@ const Playground = () => {
 
       setMessages((prevMessages) => [...prevMessages, botReply]);
     } catch {
-      setMessages((prevMessages) => [...prevMessages, { text: 'Error: Failed to fetch response.', sender: 'bot' }]);
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { text: 'Error: Failed to fetch response.', sender: 'bot' },
+      ]);
     }
 
-    setShouldScroll(true); // Allow scroll after message is sent
+    setShouldScroll(true);
   };
 
-  // Function to create new chat window
+  // Handle creating a new chat window
   const handleCreateNewChatWindow = async () => {
     setMessages([]);
     setCurrentMessage('');
-    setSelectedDeployment('GPT-3');
 
     try {
-      const response = await axios.post(url, {
-        text: "!!new_chat",
-      }, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      const response = await axios.post(
+        url,
+        { text: '!!new_chat' },
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
 
       const botResponse = response.data.response || 'New chat created.';
 
-      if (!botResponse.includes("Act like a helpful assistant")) {
+      if (!botResponse.includes('Act like a helpful assistant')) {
         setMessages((prevMessages) => [...prevMessages, { text: botResponse, sender: 'bot' }]);
       }
     } catch {
-      setMessages((prevMessages) => [...prevMessages, { text: 'Error: Failed to create new chat.', sender: 'bot' }]);
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { text: 'Error: Failed to create new chat.', sender: 'bot' },
+      ]);
     }
   };
 
@@ -112,10 +157,10 @@ const Playground = () => {
           boxShadow: '0px 10px 30px rgba(0, 0, 0, 0.1)',
           width: '75%',
           height: '100%',
-          maxHeight: 'calc(100vh - 350px)', // Prevent chat window from overlapping
+          maxHeight: 'calc(100vh - 350px)',
           margin: '0 auto',
           backgroundColor: '#ffffff',
-          position: 'fixed', 
+          position: 'fixed',
         }}
       >
         <Button
@@ -136,10 +181,6 @@ const Playground = () => {
             padding: '10px 25px',
             textTransform: 'none',
             fontWeight: 'bold',
-            transition: 'background-color 0.3s ease',
-            '&:hover': {
-              backgroundColor: '#ff4b42',
-            },
           }}
         >
           New Chat Window
@@ -164,14 +205,11 @@ const Playground = () => {
               boxShadow: '0px 2px 10px rgba(0, 0, 0, 0.1)',
               fontSize: '16px',
               fontWeight: 'bold',
-              '& .MuiSelect-select': {
-                padding: '12px',
-              },
             }}
           >
-            {dummyDeployments.map((deployment) => (
-              <MenuItem key={deployment} value={deployment}>
-                {deployment}
+            {deployments.map((deployment) => (
+              <MenuItem key={deployment.deployment_id} value={deployment.instance_name}>
+                {deployment.instance_name}
               </MenuItem>
             ))}
           </Select>
@@ -216,7 +254,6 @@ const Playground = () => {
                       boxShadow: '0px 6px 15px rgba(0, 0, 0, 0.1)',
                       wordWrap: 'break-word',
                       fontSize: '16px',
-                      fontFamily: "'Roboto', sans-serif",
                     }}
                   >
                     {msg.text}
@@ -247,33 +284,24 @@ const Playground = () => {
             fullWidth
             variant="outlined"
             size="small"
-            placeholder="Type a message..."
+            multiline
+            rows={1}
             value={currentMessage}
-            onChange={(e) => {
-              setCurrentMessage(e.target.value);
-              setShouldScroll(false);
-            }}
+            onChange={(e) => setCurrentMessage(e.target.value)}
             onKeyPress={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
                 handleSendMessage();
               }
             }}
-            multiline
-            rows={1}
-            maxRows={4}
+            placeholder="Type a message..."
             sx={{
+              flexGrow: 1,
+              fontSize: '16px',
+              borderRadius: '20px',
+              backgroundColor: '#f7f7f7',
               marginRight: '10px',
-              borderRadius: '12px',
-              backgroundColor: '#fafafa',
-              border: '1px solid #ddd',
-              resize: 'none',
-              '& .MuiOutlinedInput-root': {
-                '& fieldset': {
-                  border: 'none',
-                },
-              },
-              boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)',
+              padding: '10px 15px',
             }}
           />
           <Button
@@ -281,10 +309,10 @@ const Playground = () => {
             color="primary"
             onClick={handleSendMessage}
             sx={{
-              padding: '8px 20px',
-              fontSize: '14px',
+              padding: '10px 20px',
               fontWeight: 'bold',
-              boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)',
+              borderRadius: '20px',
+              boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.2)',
               textTransform: 'none',
             }}
           >

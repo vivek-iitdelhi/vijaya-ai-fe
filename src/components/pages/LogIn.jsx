@@ -89,7 +89,7 @@ const LogIn = ({ onSuccess }) => {
             id="email"
             value={formData.email}
             onChange={handleChange}
-            required
+            required  
           />
         </div>
         <div>

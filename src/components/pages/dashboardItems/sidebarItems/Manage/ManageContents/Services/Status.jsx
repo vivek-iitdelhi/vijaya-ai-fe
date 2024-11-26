@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom'; // Import useParams for route params
 import axios from 'axios';
 import {
   Button,
@@ -20,66 +21,102 @@ import {
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 
-const API_BASE_URL = `${import.meta.env.VITE_HOST_URL}/basemodels/`;
+const BASE_MODEL_API = `${import.meta.env.VITE_HOST_URL}/basemodels/`;
+const DEPLOYMENT_API = `${import.meta.env.VITE_HOST_URL}/deployments/`;
 
 export default function Status() {
+  const { project_id } = useParams(); 
   const [selectedModel, setSelectedModel] = useState(null);
   const [deploymentName, setDeploymentName] = useState('');
   const [deployments, setDeployments] = useState([]);
-  const [baseModels, setBaseModels] = useState([]); // State for the base models
-  const [loading, setLoading] = useState(true); // Loading state to handle the fetching state
+  const [baseModels, setBaseModels] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Get the token from local storage or wherever you store it
   const getToken = () => localStorage.getItem('authToken');
 
   useEffect(() => {
     const fetchBaseModels = async () => {
       try {
         const token = getToken();
-        const response = await axios.get(API_BASE_URL, {
+        const response = await axios.get(BASE_MODEL_API, {
           headers: {
             Authorization: `Token ${token}`,
-            "ngrok-skip-browser-warning": "69420",
+            'ngrok-skip-browser-warning': '69420',
           },
         });
-        setBaseModels(response.data); // Set the fetched data to state
-        setLoading(false); // Set loading to false once data is fetched
+        setBaseModels(response.data);
       } catch (error) {
         console.error('Error fetching base models:', error);
-        setLoading(false); // Also stop loading on error
+      } finally {
+        setLoading(false);
       }
     };
-  
-    fetchBaseModels(); 
+
+    fetchBaseModels();
   }, []);
-  
+
+  const fetchDeployments = async () => {
+    try {
+      const token = getToken();
+      const response = await axios.get(DEPLOYMENT_API, {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+        params: { project_id }, // Use project_id from params
+      });
+      setDeployments(response.data);
+    } catch (error) {
+      console.error('Error fetching deployments:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchDeployments();
+    const interval = setInterval(fetchDeployments, 30000); // Poll every 30 seconds
+    return () => clearInterval(interval);
+  }, [project_id]); // Re-fetch when project_id changes
 
   const handleModelSelect = (model) => {
     setSelectedModel(model);
   };
 
-  const handleDeploy = () => {
+  const handleDeploy = async () => {
     if (selectedModel && deploymentName) {
-      const newDeployment = {
-        id: deployments.length > 0 ? deployments[deployments.length - 1].id + 1 : 1, // Fix ID issue
-        name: deploymentName,
-        model: selectedModel.model_name, // Correctly use the model name
-        status: 'Pending',
-      };
-      setDeployments([...deployments, newDeployment]);
-      setDeploymentName('');
+      try {
+        const token = getToken();
+        const payload = {
+          project_id, // project_id from params
+          model_id: selectedModel.model_id,
+          deployment_name: deploymentName,
+          instance_name: `instance-${deploymentName}`,
+        };
+        await axios.post(DEPLOYMENT_API, payload, {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        });
+        alert('Deployment initiated successfully!');
+        setDeploymentName('');
+        fetchDeployments(); // Refresh the deployments list
+      } catch (error) {
+        console.error('Error deploying model:', error);
+        alert('Failed to deploy the model. Please try again.');
+      }
     } else {
       alert('Please select a model and provide a deployment name.');
     }
   };
 
-  const handleDelete = (id) => {
-    setDeployments(deployments.filter((deployment) => deployment.id !== id));
+  const handleDelete = async (id) => {
+    try {
+      setDeployments(deployments.filter((deployment) => deployment.deployment_id !== id));
+    } catch (error) {
+      console.error('Error deleting deployment:', error);
+    }
   };
 
   return (
     <Grid container spacing={2} style={{ padding: '20px', height: '100vh' }}>
-      {/* Left Section (Base Models) */}
       <Grid item xs={12} md={3}>
         <Paper
           elevation={3}
@@ -96,8 +133,6 @@ export default function Status() {
           <Typography variant="h6" gutterBottom>
             Base Models
           </Typography>
-
-          {/* Scrollable List of Models */}
           <Box
             sx={{
               flexGrow: 1,
@@ -132,7 +167,6 @@ export default function Status() {
               </List>
             )}
           </Box>
-          
           <TextField
             label="Deployment Name"
             fullWidth
@@ -140,8 +174,6 @@ export default function Status() {
             onChange={(e) => setDeploymentName(e.target.value)}
             sx={{ marginBottom: '20px' }}
           />
-
-          
           <Button
             variant="contained"
             color="primary"
@@ -149,12 +181,10 @@ export default function Status() {
             onClick={handleDeploy}
             sx={{ borderRadius: '12px' }}
           >
-        Deploy
+            Deploy
           </Button>
         </Paper>
       </Grid>
-
-      {/* Right Section (Deployments Table) */}
       <Grid item xs={12} md={9}>
         <Paper
           elevation={3}
@@ -168,37 +198,33 @@ export default function Status() {
           <Typography variant="h6" gutterBottom>
             Deployments
           </Typography>
-
-          {/* Scrollable Table Container */}
           <TableContainer
             component={Paper}
             sx={{
               borderRadius: '12px',
-              maxHeight: '450px', // Set max height to enable scrolling
-              overflowY: 'auto',  // Enable vertical scrolling
+              maxHeight: '450px',
+              overflowY: 'auto',
             }}
           >
             <Table stickyHeader>
               <TableHead>
                 <TableRow>
                   <TableCell>ID</TableCell>
-                  <TableCell>Deployment Name</TableCell>
-                  <TableCell>Model</TableCell>
+                  <TableCell>Instance Name</TableCell>
                   <TableCell>Status</TableCell>
                   <TableCell>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {deployments.map((deployment) => (
-                  <TableRow key={deployment.id}>
-                    <TableCell>{deployment.id}</TableCell>
-                    <TableCell>{deployment.name}</TableCell>
-                    <TableCell>{deployment.model}</TableCell>
+                  <TableRow key={deployment.deployment_id}>
+                    <TableCell>{deployment.deployment_id}</TableCell>
+                    <TableCell>{deployment.instance_name}</TableCell>
                     <TableCell>{deployment.status}</TableCell>
                     <TableCell>
                       <IconButton
                         aria-label="delete"
-                        onClick={() => handleDelete(deployment.id)}
+                        onClick={() => handleDelete(deployment.deployment_id)}
                       >
                         <DeleteIcon />
                       </IconButton>
