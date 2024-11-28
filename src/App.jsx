@@ -9,6 +9,7 @@ import ContactUs from "./components/pages/ContactUs";
 import LogIn from "./components/pages/LogIn";
 import DatasetManager from "./components/pages/dashboardItems/sidebarItems/Manage/DatasetManager";
 import { initializeGA, logPageView } from "./analytics";
+import DatasetManagerRAG from "./components/pages/dashboardItems/sidebarItems/ManageRAG/DatasetManagerRAG";
 
 function App() {
   const location = useLocation(); // For tracking route changes
@@ -26,6 +27,7 @@ function App() {
       <Navbar />
       <Routes>
         <Route path="/manage/:project_id" element={<DatasetManager />} />
+        <Route path="/rag/manage/:project_id" element={<DatasetManagerRAG/>}/>
         <Route path="/" element={<Dashboard />} />
         <Route path="/about" element={<About />} />
         <Route path="/dashboard" element={<Dashboard />} />

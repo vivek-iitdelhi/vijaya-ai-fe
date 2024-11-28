@@ -201,8 +201,8 @@ export default function Status() {
           <TableContainer
             component={Paper}
             sx={{
-              borderRadius: '12px',
-              maxHeight: '450px',
+              borderRadius: '20px',
+              maxHeight: '550px',
               overflowY: 'auto',
             }}
           >
