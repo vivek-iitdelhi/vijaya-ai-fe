@@ -119,24 +119,54 @@ export default function TrainingJobs() {
   const handleOpenErrorModal = () => setOpenErrorModal(true);
   const handleCloseErrorModal = () => setOpenErrorModal(false);
 
-  const handleBaseModelChange = (event) => {
+  const handleBaseModelChange = async (event) => {
     const selectedModelId = event.target.value;
     setBaseModel(selectedModelId);
-
+  
     if (selectedModelId) {
-      setParameters([
-        { name: 'Learning Rate', value: '0.04' },
-        { name: 'Batch Size', value: '4' },
-      ]);
+      try {
+        const token = getToken();
+        const response = await axios.get(`${API_BASE_URL}${selectedModelId}/`, {
+          headers: {
+            Authorization: `Token ${token}`,
+            'ngrok-skip-browser-warning': '69420',
+          },
+        });
+  
+        const rawParameters = response.data.parameters;
+  
+        // Manually parse the Python-like OrderedDict string
+        const parsedParameters = rawParameters
+          .replace(/OrderedDict\(\[/, '') // Remove 'OrderedDict(['
+          .replace(/\]\)$/, '') // Remove '])'
+          .split('), (') // Split into individual entries
+          .map((param, index) => {
+            const cleanParam = param
+              .replace(/^\(/, '') // Remove '(' at the start of the first parameter
+              .replace(/\)$/, ''); // Remove ')' at the end of the last parameter
+            const [name, value] = cleanParam
+              .replace(/[\[\]']/g, '') // Remove brackets and quotes
+              .split(', '); // Split key-value pair
+            return { name: name.trim(), value: value.trim() };
+          });
+  
+        setParameters(parsedParameters);
+      } catch (error) {
+        console.error('Error fetching model parameters:', error);
+        setParameters([]); // Reset parameters if there is an error
+      }
     } else {
-      setParameters([]);
+      setParameters([]); // Clear parameters if no model is selected
     }
   };
-
+  
+  
+  
+  
   const handleParameterChange = (index, event) => {
-    const newParameters = [...parameters];
-    newParameters[index].value = event.target.value;
-    setParameters(newParameters);
+    const updatedParameters = [...parameters];
+    updatedParameters[index].value = event.target.value;
+    setParameters(updatedParameters);
   };
 
   const filteredJobs = jobs.filter((job) =>
@@ -308,16 +338,30 @@ export default function TrainingJobs() {
             </Select>
           </FormControl>
 
-          {parameters.map((param, index) => (
-            <TextField
-              key={index}
-              label={param.name}
-              fullWidth
-              margin="normal"
-              value={param.value}
-              onChange={(e) => handleParameterChange(index, e)}
-            />
-          ))}
+          <Box>
+  {/* Map parameters into a 3-column grid */}
+  <Box
+    sx={{
+      display: 'grid',
+      gridTemplateColumns: 'repeat(3, 1fr)', // 3 columns
+      gap: '10px',
+      marginTop: '20px',
+    }}
+  >
+   {Array.isArray(parameters) && parameters.map((param, index) => (
+  <TextField
+    key={index}
+    label={param.name}
+    value={param.value || ''}
+    onChange={(e) => handleParameterChange(index, e)}
+    fullWidth
+  />
+))}
+
+  </Box>
+
+</Box>;
+
 
           <Button variant="contained" fullWidth onClick={handleCreateJob} sx={{ marginTop: '20px', borderRadius: '20px' }}>
             Create Job
