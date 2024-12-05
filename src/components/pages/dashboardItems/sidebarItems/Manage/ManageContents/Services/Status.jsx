@@ -61,6 +61,7 @@ export default function Status() {
       const response = await axios.get(DEPLOYMENT_API, {
         headers: {
           Authorization: `Token ${token}`,
+          'ngrok-skip-browser-warning': '69420',
         },
         params: { project_id }, // Use project_id from params
       });
@@ -93,6 +94,7 @@ export default function Status() {
         await axios.post(DEPLOYMENT_API, payload, {
           headers: {
             Authorization: `Token ${token}`,
+            'ngrok-skip-browser-warning': '69420',
           },
         });
         alert('Deployment initiated successfully!');
@@ -109,12 +111,25 @@ export default function Status() {
 
   const handleDelete = async (id) => {
     try {
+      const token = getToken();
+      console.log(token)
+      const response = await axios.delete(`${DEPLOYMENT_API}${id}/`, {
+        headers: {
+          Authorization: `Token ${token}`,
+          'ngrok-skip-browser-warning': '69420',
+        },
+      });
+  
+      // Update state to remove the deleted item
       setDeployments(deployments.filter((deployment) => deployment.deployment_id !== id));
+      alert('Deployment deleted successfully!');
     } catch (error) {
       console.error('Error deleting deployment:', error);
+      alert('Failed to delete the deployment. Check console for details.');
     }
   };
-
+  
+  
   return (
     <Grid container spacing={2} style={{ padding: '20px', height: '100vh' }}>
       <Grid item xs={12} md={3}>
@@ -149,7 +164,7 @@ export default function Status() {
               <List>
                 {baseModels.map((model) => (
                   <ListItem
-                    button
+                     button
                     key={model.model_id}
                     onClick={() => handleModelSelect(model)}
                     sx={{
@@ -216,7 +231,9 @@ export default function Status() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {deployments.map((deployment) => (
+              {deployments
+                .filter((deployment) => deployment.status !== 'terminating')
+                .map((deployment) => (
                   <TableRow key={deployment.deployment_id}>
                     <TableCell>{deployment.deployment_id}</TableCell>
                     <TableCell>{deployment.instance_name}</TableCell>
@@ -231,7 +248,8 @@ export default function Status() {
                     </TableCell>
                   </TableRow>
                 ))}
-              </TableBody>
+            </TableBody>
+
             </Table>
           </TableContainer>
         </Paper>
