@@ -91,7 +91,7 @@ const ModelArtifactsTable = () => {
   };
 
   const filteredData = modelArtifacts.filter((row) =>
-    row.Artifact_name.toLowerCase().includes(searchQuery.toLowerCase())
+    row.artifact_name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -189,13 +189,13 @@ const ModelArtifactsTable = () => {
             {filteredData.map((row, index) => (
               <TableRow key={index}>
                 <TableCell sx={{ color: "#333", fontSize: "14px" }}>
-                  {row.Artifact_name}
+                  {row.artifact_name}
                 </TableCell>
                 <TableCell sx={{ color: "#333", fontSize: "14px" }}>
-                  {row.Storage_path}
+                  {row.gcp_path}
                 </TableCell>
                 <TableCell sx={{ color: "#333", fontSize: "14px" }}>
-                  {row.Deployment_status}
+                  {row.deployment_status}
                 </TableCell>
                 <TableCell
                   sx={{
