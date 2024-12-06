@@ -8,7 +8,7 @@ const Playground = () => {
   const [messages, setMessages] = useState([]);
   const [currentMessage, setCurrentMessage] = useState('');
   const [deployments, setDeployments] = useState([]);
-  const [selectedDeployment, setSelectedDeployment] = useState('');
+  const [selectedDeployment, setSelectedDeployment] = useState('free-model');
   const [shouldScroll, setShouldScroll] = useState(true);
 
   const { project_id } = useParams(); // Get project_id from URL
@@ -34,8 +34,20 @@ const Playground = () => {
       );
       setDeployments(successfulDeployments);
 
-      if (!successfulDeployments.find((d) => d.instance_name === selectedDeployment)) {
-        setSelectedDeployment(successfulDeployments[0]?.instance_name || '');
+      // Add "Free Model" as the default model for testing
+      const freeModel = {
+        deployment_id: 'free-model',
+        instance_name: 'Free Model',
+        status: 'Deployed',
+      };
+
+      setDeployments((prev) => [freeModel, ...successfulDeployments]);
+
+      if (
+        !successfulDeployments.find((d) => d.instance_name === selectedDeployment) &&
+        selectedDeployment !== 'free-model'
+      ) {
+        setSelectedDeployment(freeModel.instance_name);
       }
     } catch (error) {
       console.error('Error fetching deployments:', error);
@@ -50,15 +62,23 @@ const Playground = () => {
 
   // Handle sending messages
   const handleSendMessage = async () => {
-    if (currentMessage.trim() === '') return;
+    if (currentMessage.trim() === '' || !selectedDeployment) {
+      alert('Please select a deployment and enter a message.');
+      return;
+    }
 
     const newMessages = [...messages, { text: currentMessage, sender: 'user' }];
     setMessages(newMessages);
     setCurrentMessage('');
 
     try {
+      const apiUrl =
+        selectedDeployment === 'Free Model'
+          ? 'https://api.vijaya.ai/api/deployments/aa67d879-ac07-40f1-b908-78d2d2f625e9/generate/'
+          : `${url}${selectedDeployment}/generate/`;
+
       const response = await axios.post(
-        url,
+        apiUrl,
         { text: currentMessage },
         {
           headers: {
@@ -74,7 +94,8 @@ const Playground = () => {
       };
 
       setMessages((prevMessages) => [...prevMessages, botReply]);
-    } catch {
+    } catch (error) {
+      console.error('Error sending message:', error);
       setMessages((prevMessages) => [
         ...prevMessages,
         { text: 'Error: Failed to fetch response.', sender: 'bot' },
@@ -102,7 +123,6 @@ const Playground = () => {
       );
 
       const botResponse = response.data.response || 'New chat created.';
-
       if (!botResponse.includes('Act like a helpful assistant')) {
         setMessages((prevMessages) => [...prevMessages, { text: botResponse, sender: 'bot' }]);
       }
@@ -155,7 +175,7 @@ const Playground = () => {
           borderRadius: '20px',
           overflow: 'auto',
           boxShadow: '0px 10px 30px rgba(0, 0, 0, 0.1)',
-          width: '75%',
+          width: '85%',
           height: '100%',
           maxHeight: 'calc(100vh - 350px)',
           margin: '0 auto',
@@ -186,7 +206,6 @@ const Playground = () => {
           New Chat Window
         </Button>
 
-        {/* Deployment Dropdown */}
         <Box
           sx={{
             padding: '15px',
@@ -215,7 +234,6 @@ const Playground = () => {
           </Select>
         </Box>
 
-        {/* Chat Area */}
         <Box
           sx={{
             flexGrow: 1,
@@ -252,7 +270,7 @@ const Playground = () => {
                       padding: '14px 20px',
                       maxWidth: '70%',
                       boxShadow: '0px 6px 15px rgba(0, 0, 0, 0.1)',
-                      wordWrap: 'break-word',
+                      wordBreak: 'break-word',
                       fontSize: '16px',
                     }}
                   >
@@ -265,55 +283,45 @@ const Playground = () => {
           <div ref={lastMessageRef}></div>
         </Box>
 
-        {/* Message Input Area */}
         <Box
-          component={motion.div}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
           sx={{
             display: 'flex',
-            alignItems: 'flex-start',
-            padding: '15px',
-            backgroundColor: '#ffffff',
+            padding: '10px',
+            backgroundColor: '#fff',
             borderTop: '1px solid #ddd',
           }}
         >
           <TextField
-            inputRef={textareaRef}
             fullWidth
             variant="outlined"
-            size="small"
-            multiline
-            rows={1}
             value={currentMessage}
             onChange={(e) => setCurrentMessage(e.target.value)}
-            onKeyPress={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleSendMessage();
-              }
-            }}
-            placeholder="Type a message..."
             sx={{
-              flexGrow: 1,
+              backgroundColor: '#f9f9f9',
+              borderRadius: '12px',
+              padding: '5px 10px',
               fontSize: '16px',
-              borderRadius: '20px',
-              backgroundColor: '#f7f7f7',
-              marginRight: '10px',
-              padding: '10px 15px',
             }}
+            multiline
+            minRows={2}
+            maxRows={4}
+            inputRef={textareaRef}
           />
           <Button
             variant="contained"
             color="primary"
             onClick={handleSendMessage}
             sx={{
+              marginLeft: '10px',
+              backgroundColor: '#007aff',
+              color: '#fff',
               padding: '10px 20px',
-              fontWeight: 'bold',
-              borderRadius: '20px',
-              boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.2)',
-              textTransform: 'none',
+              borderRadius: '10px',
+              fontSize: '16px',
+              boxShadow: '0px 5px 15px rgba(0, 0, 0, 0.2)',
+              '&:hover': {
+                backgroundColor: '#005f8c',
+              },
             }}
           >
             Send

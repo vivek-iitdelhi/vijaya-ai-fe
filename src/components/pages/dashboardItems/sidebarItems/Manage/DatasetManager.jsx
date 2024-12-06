@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Box, Button } from '@mui/material';
 import { motion } from 'framer-motion';
 import DatasetContent from './ManageContents/DatasetContent';
@@ -8,8 +8,12 @@ import ServicesContent from './ManageContents/ServicesContent';
 import { useParams } from 'react-router-dom';
 
 export default function DatasetManager() {
-  const [selectedSection, setSelectedSection] = useState('datasets');
   const { project_id } = useParams();
+
+  // Get the selected section from localStorage (if available)
+  const initialSection = localStorage.getItem('selectedSection') || 'datasets';
+
+  const [selectedSection, setSelectedSection] = useState(initialSection);
 
   // Animation variants
   const buttonVariants = {
@@ -37,6 +41,11 @@ export default function DatasetManager() {
         return <DatasetContent project_id={project_id} />;
     }
   };
+
+  // Save the selected section to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('selectedSection', selectedSection);
+  }, [selectedSection]);
 
   return (
     <Box
@@ -122,4 +131,4 @@ export default function DatasetManager() {
       </Box>
     </Box>
   );
-}  
+}

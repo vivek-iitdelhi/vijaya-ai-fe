@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom'; // Import useParams for route params
+import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import {
   Button,
@@ -17,7 +17,7 @@ import {
   ListItemText,
   Typography,
   Box,
-  IconButton
+  IconButton,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 
@@ -25,7 +25,7 @@ const BASE_MODEL_API = `${import.meta.env.VITE_HOST_URL}/basemodels/`;
 const DEPLOYMENT_API = `${import.meta.env.VITE_HOST_URL}/deployments/`;
 
 export default function Status() {
-  const { project_id } = useParams(); 
+  const { project_id } = useParams();
   const [selectedModel, setSelectedModel] = useState(null);
   const [deploymentName, setDeploymentName] = useState('');
   const [deployments, setDeployments] = useState([]);
@@ -63,7 +63,7 @@ export default function Status() {
           Authorization: `Token ${token}`,
           'ngrok-skip-browser-warning': '69420',
         },
-        params: { project_id }, // Use project_id from params
+        params: { project_id },
       });
       setDeployments(response.data);
     } catch (error) {
@@ -73,9 +73,9 @@ export default function Status() {
 
   useEffect(() => {
     fetchDeployments();
-    const interval = setInterval(fetchDeployments, 30000); // Poll every 30 seconds
+    const interval = setInterval(fetchDeployments, 30000);
     return () => clearInterval(interval);
-  }, [project_id]); // Re-fetch when project_id changes
+  }, [project_id]);
 
   const handleModelSelect = (model) => {
     setSelectedModel(model);
@@ -86,7 +86,7 @@ export default function Status() {
       try {
         const token = getToken();
         const payload = {
-          project_id, // project_id from params
+          project_id,
           model_id: selectedModel.model_id,
           deployment_name: deploymentName,
           instance_name: `instance-${deploymentName}`,
@@ -99,7 +99,7 @@ export default function Status() {
         });
         alert('Deployment initiated successfully!');
         setDeploymentName('');
-        fetchDeployments(); // Refresh the deployments list
+        fetchDeployments();
       } catch (error) {
         console.error('Error deploying model:', error);
         alert('Failed to deploy the model. Please try again.');
@@ -112,15 +112,12 @@ export default function Status() {
   const handleDelete = async (id) => {
     try {
       const token = getToken();
-      console.log(token)
-      const response = await axios.delete(`${DEPLOYMENT_API}${id}/`, {
+      await axios.delete(`${DEPLOYMENT_API}${id}/`, {
         headers: {
           Authorization: `Token ${token}`,
           'ngrok-skip-browser-warning': '69420',
         },
       });
-  
-      // Update state to remove the deleted item
       setDeployments(deployments.filter((deployment) => deployment.deployment_id !== id));
       alert('Deployment deleted successfully!');
     } catch (error) {
@@ -128,132 +125,163 @@ export default function Status() {
       alert('Failed to delete the deployment. Check console for details.');
     }
   };
-  
-  
-  return (
-    <Grid container spacing={2} style={{ padding: '20px', height: '100vh' }}>
-      <Grid item xs={12} md={3}>
-        <Paper
-          elevation={3}
-          sx={{
-            padding: '20px',
-            borderRadius: '16px',
-            backgroundColor: '#f0f4f8',
-            height: '500px',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between',
-          }}
-        >
-          <Typography variant="h6" gutterBottom>
-            Base Models
-          </Typography>
-          <Box
-            sx={{
-              flexGrow: 1,
-              overflowY: 'auto',
-              marginBottom: '20px',
-              borderRadius: '12px',
-              backgroundColor: '#fff',
-              padding: '10px',
-            }}
-          >
-            {loading ? (
-              <Typography>Loading base models...</Typography>
-            ) : (
-              <List>
-                {baseModels.map((model) => (
-                  <ListItem
-                     button
-                    key={model.model_id}
-                    onClick={() => handleModelSelect(model)}
-                    sx={{
-                      backgroundColor: selectedModel?.model_id === model.model_id ? '#90caf9' : '#ffffff',
-                      marginBottom: '10px',
-                      borderRadius: '8px',
-                      '&:hover': {
-                        backgroundColor: '#e3f2fd',
-                      },
-                    }}
-                  >
-                    <ListItemText primary={model.model_name} />
-                  </ListItem>
-                ))}
-              </List>
-            )}
-          </Box>
-          <TextField
-            label="Deployment Name"
-            fullWidth
-            value={deploymentName}
-            onChange={(e) => setDeploymentName(e.target.value)}
-            sx={{ marginBottom: '20px' }}
-          />
-          <Button
-            variant="contained"
-            color="primary"
-            fullWidth
-            onClick={handleDeploy}
-            sx={{ borderRadius: '12px' }}
-          >
-            Deploy
-          </Button>
-        </Paper>
-      </Grid>
-      <Grid item xs={12} md={9}>
-        <Paper
-          elevation={3}
-          sx={{
-            padding: '20px',
-            borderRadius: '16px',
-            backgroundColor: '#f9f9f9',
-            height: '100%',
-          }}
-        >
-          <Typography variant="h6" gutterBottom>
-            Deployments
-          </Typography>
-          <TableContainer
-            component={Paper}
-            sx={{
-              borderRadius: '20px',
-              maxHeight: '550px',
-              overflowY: 'auto',
-            }}
-          >
-            <Table stickyHeader>
-              <TableHead>
-                <TableRow>
-                  <TableCell>ID</TableCell>
-                  <TableCell>Instance Name</TableCell>
-                  <TableCell>Status</TableCell>
-                  <TableCell>Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-              {deployments
-                .filter((deployment) => deployment.status !== 'terminating')
-                .map((deployment) => (
-                  <TableRow key={deployment.deployment_id}>
-                    <TableCell>{deployment.deployment_id}</TableCell>
-                    <TableCell>{deployment.instance_name}</TableCell>
-                    <TableCell>{deployment.status}</TableCell>
-                    <TableCell>
-                      <IconButton
-                        aria-label="delete"
-                        onClick={() => handleDelete(deployment.deployment_id)}
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                ))}
-            </TableBody>
 
-            </Table>
-          </TableContainer>
-        </Paper>
-      </Grid>
-    </Grid>
+  return (
+    <Box
+      sx={{
+        height: '100vh',
+        overflow: 'auto', // Outer scroll for entire content
+        padding: '20px',
+      }}
+    >
+      <Grid
+  container
+  spacing={2}
+  style={{
+    padding: '20px',
+    height: '100vh',
+    overflowY: 'auto', // Add scrollbar for entire container
+  }}
+>
+  {/* Base Models Section */}
+  <Grid
+    item
+    xs={12}
+    md={3}
+    sx={{
+      display: {
+        xs: 'none', // Hide on small screens
+        md: 'block', // Show on medium screens and larger
+      },
+    }}
+  >
+    <Paper
+      elevation={3}
+      sx={{
+        padding: '20px',
+        borderRadius: '16px',
+        backgroundColor: '#f0f4f8',
+        height: '500px', // Fixed height
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+      }}
+    >
+      <Typography variant="h6" gutterBottom>
+        Base Models
+      </Typography>
+      <Box
+        sx={{
+          flexGrow: 1,
+          overflowY: 'auto',
+          marginBottom: '20px',
+          borderRadius: '12px',
+          backgroundColor: '#fff',
+          padding: '10px',
+        }}
+      >
+        {loading ? (
+          <Typography>Loading base models...</Typography>
+        ) : (
+          <List>
+            {baseModels.map((model) => (
+              <ListItem
+                button
+                key={model.model_id}
+                onClick={() => handleModelSelect(model)}
+                sx={{
+                  backgroundColor: selectedModel?.model_id === model.model_id ? '#90caf9' : '#ffffff',
+                  marginBottom: '10px',
+                  borderRadius: '8px',
+                  '&:hover': {
+                    backgroundColor: '#e3f2fd',
+                  },
+                }}
+              >
+                <ListItemText primary={model.model_name} />
+              </ListItem>
+            ))}
+          </List>
+        )}
+      </Box>
+      <TextField
+        label="Deployment Name"
+        fullWidth
+        value={deploymentName}
+        onChange={(e) => setDeploymentName(e.target.value)}
+        sx={{ marginBottom: '20px' }}
+      />
+      <Button
+        variant="contained"
+        color="primary"
+        fullWidth
+        onClick={handleDeploy}
+        sx={{ borderRadius: '12px' }}
+      >
+        Deploy
+      </Button>
+    </Paper>
+  </Grid>
+
+  {/* Deployments Table Section */}
+  <Grid item xs={12} md={9}>
+    <Paper
+      elevation={3}
+      sx={{
+        padding: '20px',
+        borderRadius: '16px',
+        backgroundColor: '#f9f9f9',
+        height: {
+          xs: 'auto', 
+          md: '600px',
+        },
+      }}
+    >
+      <Typography variant="h6" gutterBottom>
+        Deployments
+      </Typography>
+      <TableContainer
+        component={Paper}
+        sx={{
+          borderRadius: '20px',
+          maxHeight: '530px', // Ensure scrolling fits within container
+          overflowY: 'auto',
+        }}
+      >
+        <Table stickyHeader>
+          <TableHead>
+            <TableRow>
+              <TableCell>ID</TableCell>
+              <TableCell>Instance Name</TableCell>
+              <TableCell>Status</TableCell>
+              <TableCell>Actions</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {deployments
+              .filter((deployment) => deployment.status !== 'terminating')
+              .map((deployment) => (
+                <TableRow key={deployment.deployment_id}>
+                  <TableCell>{deployment.deployment_id}</TableCell>
+                  <TableCell>{deployment.instance_name}</TableCell>
+                  <TableCell>{deployment.status}</TableCell>
+                  <TableCell>
+                    <IconButton
+                      aria-label="delete"
+                      onClick={() => handleDelete(deployment.deployment_id)}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Paper>
+  </Grid>
+</Grid>
+
+    </Box>
   );
 }
