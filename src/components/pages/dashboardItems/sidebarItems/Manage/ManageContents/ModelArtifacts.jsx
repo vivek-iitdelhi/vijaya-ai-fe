@@ -18,7 +18,7 @@ import axios from "axios";
 import { useParams } from "react-router-dom"; // Import useParams for capturing URL params
 
 const API_MODEL_ARTIFACTS = `${import.meta.env.VITE_HOST_URL}/modelartifacts/`;
-const API_DEPLOY = `${import.meta.env.VITE_HOST_URL}/deploy/`;
+const API_DEPLOY = `${import.meta.env.VITE_HOST_URL}/deployments/`;
 
 const ModelArtifactsTable = () => {
   const { project_id } = useParams(); // Get project_id from the URL
@@ -49,23 +49,26 @@ const ModelArtifactsTable = () => {
     }
   }, [project_id, token]); // Make sure to include token in dependencies
 
-  const handleDeploy = async (jobId, modelId, instanceName) => {
+  const handleDeploy = async (modelId) => {
+    const instanceName = "FineTunedVersion"; // Fixed instance name
+
     try {
       const response = await axios.post(
         API_DEPLOY,
         {
           project_id, // Use the project_id from the URL
-          model_id: modelId,
+          artifact_id: modelId,
           instance_name: instanceName,
+          deployment_name: instanceName,
         },
         {
           headers: {
             Authorization: `Token ${token}`, // Include the token in the headers
             "ngrok-skip-browser-warning": "69420", // Include the ngrok header
-          }
+          },
         }
       );
-      alert(`Deployment started for ${jobId}`);
+      alert(`Deployment started for ${instanceName}`);
       console.log("Deployment Response:", response.data);
     } catch (error) {
       console.error("Error deploying model:", error);
@@ -208,7 +211,7 @@ const ModelArtifactsTable = () => {
                   <Button
                     variant="contained"
                     color="primary"
-                    onClick={() => handleDeploy(row.Training_job_id, row.Artifact_id, "test instance")}
+                    onClick={() => handleDeploy(row.artifact_id)}
                     sx={{
                       textTransform: "none",
                       padding: "8px 16px",
@@ -221,7 +224,7 @@ const ModelArtifactsTable = () => {
                     variant="outlined"
                     color="secondary"
                     startIcon={<DownloadIcon />}
-                    onClick={() => handleDownload(row.Artifact_name)}
+                    onClick={() => handleDownload(row.artifact_id)}
                     sx={{
                       textTransform: "none",
                       padding: "8px 16px",
