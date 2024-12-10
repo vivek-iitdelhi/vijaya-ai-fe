@@ -337,7 +337,7 @@ export default function TrainingJobs() {
 >
   <Box
     sx={{
-      width: 400,
+      width: 600,
       margin: 'auto',
       marginTop: '100px',
       padding: '30px',
