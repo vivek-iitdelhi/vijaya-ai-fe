@@ -20,7 +20,10 @@ import {
   Select,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { useParams } from 'react-router-dom';
+import CloseIcon from '@mui/icons-material/Close';
+import IconButton from '@mui/material/IconButton';
 
 const getToken = () => localStorage.getItem('authToken');
 const API_BASE_URL = `${import.meta.env.VITE_HOST_URL}/basemodels/`;
@@ -42,6 +45,7 @@ export default function TrainingJobs() {
   const [jobName, setJobName] = useState('');
   const [parameters, setParameters] = useState([]);
   const [currentCredits, setCurrentCredits] = useState(0);
+  const [isCreating, setIsCreating] = useState(false);
 
   useEffect(() => {
     const fetchBaseModels = async () => {
@@ -118,6 +122,7 @@ export default function TrainingJobs() {
   const handleCloseModal = () => setOpenModal(false);
   const handleOpenErrorModal = () => setOpenErrorModal(true);
   const handleCloseErrorModal = () => setOpenErrorModal(false);
+  
 
   const handleBaseModelChange = async (event) => {
     const selectedModelId = event.target.value;
@@ -174,9 +179,12 @@ export default function TrainingJobs() {
   );
 
   const handleCreateJob = async () => {
+    if (isCreating) return; // Prevent multiple submissions
+    setIsCreating(true);
+  
     if (currentCredits < 5) {
-      // If credits are insufficient, show error modal
       handleOpenErrorModal();
+      setIsCreating(false);
       return;
     }
 
@@ -192,7 +200,7 @@ export default function TrainingJobs() {
         return acc;
       }, {}),
     };
-
+  
     try {
       const token = getToken();
       const response = await axios.post(API_TRAINING_JOBS_URL, newJob, {
@@ -201,8 +209,8 @@ export default function TrainingJobs() {
           'ngrok-skip-browser-warning': '69420',
         },
       });
-
-      if (response.status === 201) { // Success!
+  
+      if (response.status === 201) {
         setJobs((prevJobs) => [...prevJobs, response.data]);
         handleCloseModal();
         setJobName('');
@@ -210,16 +218,34 @@ export default function TrainingJobs() {
         setDatasetTrain('');
         setDatasetTest('');
         setParameters([]);
-      } else if (response.status === 402) {
-        handleOpenErrorModal(response.data.error); // Pass the error message
       } else {
-        handleOpenErrorModal(`An unexpected error occurred: ${response.status}`);
+        handleOpenErrorModal(`Error: ${response.status}`);
       }
     } catch (error) {
-      console.error('Error creating new training job:', error);
+      console.error('Error creating job:', error);
       handleOpenErrorModal('An unexpected error occurred. Please try again later.');
+    } finally {
+      setIsCreating(false);
     }
   };
+
+  const handleDeleteJob = async (jobId) => {
+    try {
+      const token = getToken();
+      await axios.delete(`${API_TRAINING_JOBS_URL}${jobId}/`, {
+        headers: {
+          Authorization: `Token ${token}`,
+          'ngrok-skip-browser-warning': '69420',
+        },
+      });
+      // Filter jobs using the correct identifier
+      setJobs(jobs.filter((job) => job.training_job_id !== jobId));
+    } catch (error) {
+      console.error('Error deleting job:', error);
+    }
+  };
+  
+  
 
   return (
     <Box sx={{ padding: '20px', backgroundColor: '#ffffff', minHeight: '100vh' }}>
@@ -271,103 +297,165 @@ export default function TrainingJobs() {
               <TableCell sx={{ fontWeight: 'bold', backgroundColor: '#3f51b5', color: '#fff' }}>Job Name</TableCell>
               <TableCell sx={{ fontWeight: 'bold', backgroundColor: '#3f51b5', color: '#fff' }}>Base Model</TableCell>
               <TableCell sx={{ fontWeight: 'bold', backgroundColor: '#3f51b5', color: '#fff' }}>Train Dataset</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', backgroundColor: '#3f51b5', color: '#fff' }}>Test Dataset</TableCell>
               <TableCell sx={{ fontWeight: 'bold', backgroundColor: '#3f51b5', color: '#fff' }}>Status</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', backgroundColor: '#3f51b5', color: '#fff' }}>Action</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredJobs.map((job, index) => (
+          {filteredJobs
+            .filter((job) => job.status !== 'terminating') 
+            .map((job, index) => (
               <TableRow key={index}>
                 <TableCell>{job.training_job_name}</TableCell>
                 <TableCell>{job.model_name}</TableCell>
                 <TableCell>{job.train_dataset_name}</TableCell>
+                <TableCell>{job.test_dataset_name}</TableCell>
                 <TableCell>{job.status}</TableCell>
+                <TableCell>
+                  <IconButton
+                    variant="outlined"
+                    color="error"
+                    onClick={() => handleDeleteJob(job.training_job_id)} 
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                </TableCell>
               </TableRow>
             ))}
-          </TableBody>
+        </TableBody>
+
         </Table>
       </TableContainer>
 
-      {/* Create Job Modal */}
-      <Modal open={openModal} onClose={handleCloseModal} aria-labelledby="modal-title" aria-describedby="modal-description">
-        <Box
-          sx={{
-            width: 400,
-            margin: 'auto',
-            marginTop: '100px',
-            padding: '30px',
-            backgroundColor: '#ffffff',
-            borderRadius: '10px',
-            boxShadow: '0px 5px 15px rgba(0,0,0,0.3)',
-          }}
-        >
-          <Typography id="modal-title" variant="h6" gutterBottom>
-            Create New Training Job
-          </Typography>
-          <TextField label="Job Name" fullWidth margin="normal" value={jobName} onChange={(e) => setJobName(e.target.value)} />
-
-          <FormControl fullWidth margin="normal">
-            <InputLabel id="base-model-select-label">Base Model</InputLabel>
-            <Select labelId="base-model-select-label" id="base-model-select" value={baseModel} label="Base Model" onChange={handleBaseModelChange}>
-              {baseModels.map((model) => (
-                <MenuItem key={model.model_id} value={model.model_id}>
-                  {model.model_name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-
-          <FormControl fullWidth margin="normal">
-            <InputLabel id="train-dataset-select-label">Train Dataset</InputLabel>
-            <Select labelId="train-dataset-select-label" id="train-dataset-select" value={datasetTrain} label="Train Dataset" onChange={(e) => setDatasetTrain(e.target.value)}>
-              {datasets.map((dataset) => (
-                <MenuItem key={dataset.dataset_id} value={dataset.dataset_id}>
-                  {dataset.dataset_name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-
-          <FormControl fullWidth margin="normal">
-            <InputLabel id="test-dataset-select-label">Test Dataset</InputLabel>
-            <Select labelId="test-dataset-select-label" id="test-dataset-select" value={datasetTest} label="Test Dataset" onChange={(e) => setDatasetTest(e.target.value)}>
-              {datasets.map((dataset) => (
-                <MenuItem key={dataset.dataset_id} value={dataset.dataset_id}>
-                  {dataset.dataset_name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-
-          <Box>
-  {/* Map parameters into a 3-column grid */}
+     {/* Create Job Modal */}
+<Modal
+  open={openModal}
+  onClose={handleCloseModal}
+  aria-labelledby="modal-title"
+  aria-describedby="modal-description"
+>
   <Box
     sx={{
-      display: 'grid',
-      gridTemplateColumns: 'repeat(3, 1fr)', // 3 columns
-      gap: '10px',
-      marginTop: '20px',
+      width: 400,
+      margin: 'auto',
+      marginTop: '100px',
+      padding: '30px',
+      backgroundColor: '#ffffff',
+      borderRadius: '10px',
+      boxShadow: '0px 5px 15px rgba(0,0,0,0.3)',
+      position: 'relative',
     }}
   >
-   {Array.isArray(parameters) && parameters.map((param, index) => (
-  <TextField
-    key={index}
-    label={param.name}
-    value={param.value || ''}
-    onChange={(e) => handleParameterChange(index, e)}
-    fullWidth
-  />
-))}
+    {/* Close Icon */}
+    <IconButton
+      onClick={handleCloseModal}
+      sx={{
+        position: 'absolute',
+        top: 8,
+        right: 8,
+        color: 'gray',
+      }}
+    >
+      <CloseIcon/>
+    </IconButton>
 
+    <Typography id="modal-title" variant="h6" gutterBottom>
+      Create New Training Job
+    </Typography>
+    <TextField
+      label="Job Name"
+      fullWidth
+      margin="normal"
+      value={jobName}
+      onChange={(e) => setJobName(e.target.value)}
+    />
+
+    <FormControl fullWidth margin="normal">
+      <InputLabel id="base-model-select-label">Base Model</InputLabel>
+      <Select
+        labelId="base-model-select-label"
+        id="base-model-select"
+        value={baseModel}
+        label="Base Model"
+        onChange={handleBaseModelChange}
+      >
+        {baseModels.map((model) => (
+          <MenuItem key={model.model_id} value={model.model_id}>
+            {model.model_name}
+          </MenuItem>
+        ))}
+      </Select>
+    </FormControl>
+
+    <FormControl fullWidth margin="normal">
+      <InputLabel id="train-dataset-select-label">Train Dataset</InputLabel>
+      <Select
+        labelId="train-dataset-select-label"
+        id="train-dataset-select"
+        value={datasetTrain}
+        label="Train Dataset"
+        onChange={(e) => setDatasetTrain(e.target.value)}
+      >
+        {datasets.map((dataset) => (
+          <MenuItem key={dataset.dataset_id} value={dataset.dataset_id}>
+            {dataset.dataset_name}
+          </MenuItem>
+        ))}
+      </Select>
+    </FormControl>
+
+    <FormControl fullWidth margin="normal">
+      <InputLabel id="test-dataset-select-label">Test Dataset</InputLabel>
+      <Select
+        labelId="test-dataset-select-label"
+        id="test-dataset-select"
+        value={datasetTest}
+        label="Test Dataset"
+        onChange={(e) => setDatasetTest(e.target.value)}
+      >
+        {datasets.map((dataset) => (
+          <MenuItem key={dataset.dataset_id} value={dataset.dataset_id}>
+            {dataset.dataset_name}
+          </MenuItem>
+        ))}
+      </Select>
+    </FormControl>
+
+    <Box>
+      {/* Map parameters into a 3-column grid */}
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(3, 1fr)', // 3 columns
+          gap: '10px',
+          marginTop: '20px',
+        }}
+      >
+        {Array.isArray(parameters) &&
+          parameters.map((param, index) => (
+            <TextField
+              key={index}
+              label={param.name}
+              value={param.value || ''}
+              onChange={(e) => handleParameterChange(index, e)}
+              fullWidth
+            />
+          ))}
+      </Box>
+    </Box>
+
+    <Button
+      variant="contained"
+      fullWidth
+      onClick={handleCreateJob}
+      sx={{ marginTop: '20px', borderRadius: '20px' }}
+    >
+      Create Job
+    </Button>
   </Box>
+</Modal>
 
-</Box>;
-
-
-          <Button variant="contained" fullWidth onClick={handleCreateJob} sx={{ marginTop: '20px', borderRadius: '20px' }}>
-            Create Job
-          </Button>
-        </Box>
-      </Modal>
 
       {/* Error Modal for Insufficient Credits */}
       <Modal open={openErrorModal} onClose={handleCloseErrorModal}>
