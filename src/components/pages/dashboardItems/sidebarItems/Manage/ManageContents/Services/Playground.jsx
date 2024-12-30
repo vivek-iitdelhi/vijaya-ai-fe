@@ -15,7 +15,7 @@ const Playground = () => {
   const textareaRef = useRef(null);
   const lastMessageRef = useRef(null);
 
-  const url = `${import.meta.env.VITE_HOST_URL}/deployments/`;
+  const url = `${import.meta.env.VITE_HOST_URL}/tuning/deployments/`;
   const token = localStorage.getItem('authToken');
 
   // Fetch deployment models

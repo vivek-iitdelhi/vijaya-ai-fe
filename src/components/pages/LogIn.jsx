@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import "./LogIn.css";
-import { colors } from "@mui/material";
 
 const LogIn = ({ onSuccess }) => {
   const [isLogin, setIsLogin] = useState(true);
@@ -29,7 +30,7 @@ const LogIn = ({ onSuccess }) => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "ngrok-skip-browser-warning": "69420"
+          "ngrok-skip-browser-warning": "69420",
         },
         body: JSON.stringify({
           username: isLogin ? undefined : formData.username,
@@ -44,29 +45,35 @@ const LogIn = ({ onSuccess }) => {
           console.log("Login Success:", data);
           localStorage.setItem("authToken", data.token);
           const username = data.username || formData.email.split('@')[0];
-          localStorage.setItem("username", username); // Save username
+          localStorage.setItem("username", username);
           setErrorMessage('');
           onSuccess(); // Trigger modal close on success
           navigate("/dashboard");
         } else {
           console.log("Registration Success:", data);
-          setIsLogin(true);
+          toast.success("User registered successfully. Please check your email to verify your account.");
+          setIsLogin(true); // Switch to login form
         }
       } else {
         console.log("Error:", data);
-        setErrorMessage(data.detail || 'An error occurred');
+        if (!isLogin) {
+          setErrorMessage(data.detail || "An error occurred during registration.");
+        }
       }
     } catch (error) {
       console.error("Error:", error);
-      setErrorMessage('Server error. Please try again later.');
+      if (!isLogin) {
+        setErrorMessage("Server error. Please try again later.");
+      }
     }
   }
 
   return (
     <div className="auth-form-container">
-      <h1 color="">Welcome!</h1>
+      <ToastContainer />
+      <h1>Welcome!</h1>
       <h2>{isLogin ? 'Log In' : 'Sign Up'}</h2>
-      {errorMessage && <p className="error-message">{errorMessage}</p>}
+      {!isLogin && errorMessage && <p className="error-message">{errorMessage}</p>}
       <form onSubmit={handleSubmit}>
         {!isLogin && (
           <div>

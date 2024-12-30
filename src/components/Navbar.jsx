@@ -16,8 +16,9 @@ import { useMediaQuery } from '@mui/material';
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [credits, setCredits] = useState(null); // Initially null to indicate loading
-  const [error, setError] = useState(null); // To handle errors for credits
+  const [credits, setCredits] = useState(0); // Initialize with 0 instead of null
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true); // Add loading state
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -31,33 +32,57 @@ const Navbar = () => {
     window.open('/dashboard', '_blank');
   };
 
-  useEffect(() => {
-    const fetchCredits = async () => {
-      try {
-        const token = getToken(); 
-
-        const response = await fetch(`${import.meta.env.VITE_HOST_URL}/tuning/credits/`, {
-          headers: {
-            Authorization: `Token ${token}`,
-            "ngrok-skip-browser-warning": "69420"
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error(`Error: ${response.status}`);
-        }
-
-        const data = await response.json();
-        setCredits(data.total_credits); 
-      } catch (err) {
-        setError('Failed to load credits');
-        console.error(err);
+  const fetchCredits = async () => {
+    try {
+      const token = getToken();
+      if (!token) {
+        setError('Loading...');
+        setLoading(false);
+        return;
       }
-    };
 
+      const response = await fetch(`${import.meta.env.VITE_HOST_URL}/tuning/credits/`, {
+        headers: {
+          Authorization: `Token ${token}`,
+          "ngrok-skip-browser-warning": "69420",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      // Ensure we're setting a number, with fallback to 0
+      setCredits(Number(data.total_credits) || 0);
+      setError(null);
+    } catch (err) {
+      setError('Failed to load credits');
+      console.error('Error fetching credits:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    // Initial fetch
     fetchCredits();
-  }, []);
 
+    // Set up interval for subsequent fetches
+    const interval = setInterval(fetchCredits, 30000);
+
+    // Cleanup interval on component unmount
+    return () => clearInterval(interval);
+  }, []); // Empty dependency array since fetchCredits is defined inside component
+
+  // Format credits to 2 decimal places
+  const formattedCredits = credits.toFixed(2);
+
+  const displayCredits = () => {
+    if (loading) return 'Loading...';
+    if (error) return error;
+    return `Total Credits: $${formattedCredits}`;
+  };
 
   const drawer = (
     <Box
@@ -136,7 +161,7 @@ const Navbar = () => {
                   mr: 2,
                 }}
               >
-                {error ? error : credits !== null ? `Total Credits: $${credits}` : 'Loading...'}
+                {displayCredits()}
               </Typography>
               <Button
                 color="inherit"

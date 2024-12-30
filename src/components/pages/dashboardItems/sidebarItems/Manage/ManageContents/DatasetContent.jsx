@@ -212,7 +212,7 @@ const DatasetContent = () => {
     </TableHead>
     <TableBody>
       {datasets.map((dataset) => (
-        <TableRow key={dataset.dataset_id} sx={{ backgroundColor: dataset.index % 2 === 0 ? '#f9f9f9' : '#ffffff' }}>
+        <TableRow key={dataset.gcp_path} sx={{ backgroundColor: dataset.index % 2 === 0 ? '#f9f9f9' : '#ffffff' }}>
           <TableCell sx={{ textAlign: 'center' }}>{dataset.dataset_name}</TableCell>
           <TableCell sx={{ textAlign: 'center' }}>{dataset.gcp_path}</TableCell>
           <TableCell sx={{ textAlign: 'center' }}>

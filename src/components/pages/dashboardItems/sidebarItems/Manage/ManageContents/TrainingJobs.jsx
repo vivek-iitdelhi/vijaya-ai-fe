@@ -34,7 +34,7 @@ const API_CREDITS_URL = `${import.meta.env.VITE_HOST_URL}/tuning/credits/`;
 export default function TrainingJobs() {
   const { project_id } = useParams();
   const [openModal, setOpenModal] = useState(false);
-  const [openErrorModal, setOpenErrorModal] = useState(false); // For error modal
+  const [openErrorModal, setOpenErrorModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [jobs, setJobs] = useState([]);
   const [baseModels, setBaseModels] = useState([]);
@@ -46,88 +46,79 @@ export default function TrainingJobs() {
   const [parameters, setParameters] = useState([]);
   const [currentCredits, setCurrentCredits] = useState(0);
   const [isCreating, setIsCreating] = useState(false);
+  const [submitDisabled, setSubmitDisabled] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+
+  // Fetch data function
+  const fetchData = async () => {
+    const token = getToken();
+    const headers = {
+      Authorization: `Token ${token}`,
+      'ngrok-skip-browser-warning': '69420',
+    };
+
+    try {
+      const [baseModelsRes, jobsRes, datasetsRes, creditsRes] = await Promise.all([
+        axios.get(API_BASE_URL, { headers }),
+        axios.get(`${API_TRAINING_JOBS_URL}?project_id=${project_id}`, { headers }),
+        axios.get(`${API_DATASETS_URL}?project_id=${project_id}`, { headers }),
+        axios.get(API_CREDITS_URL, { headers })
+      ]);
+
+      setBaseModels(baseModelsRes.data);
+      setJobs(jobsRes.data);
+      setDatasets(datasetsRes.data);
+      setCurrentCredits(creditsRes.data.current_credits);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      setErrorMessage('Failed to fetch data. Please try again.');
+    }
+  };
 
   useEffect(() => {
-    const fetchBaseModels = async () => {
-      try {
-        const token = getToken();
-        const response = await axios.get(API_BASE_URL, {
-          headers: {
-            Authorization: `Token ${token}`,
-            'ngrok-skip-browser-warning': '69420',
-          },
-        });
-        setBaseModels(response.data);
-      } catch (error) {
-        console.error('Error fetching base models:', error);
-      }
-    };
-
-    const fetchTrainingJobs = async () => {
-      try {
-        const token = getToken();
-        const response = await axios.get(`${API_TRAINING_JOBS_URL}?project_id=${project_id}`, {
-          headers: {
-            Authorization: `Token ${token}`,
-            'ngrok-skip-browser-warning': '69420',
-          },
-        });
-        setJobs(response.data);
-      } catch (error) {
-        console.error('Error fetching training jobs:', error);
-      }
-    };
-
-    const fetchDatasets = async () => {
-      try {
-        const token = getToken();
-        const response = await axios.get(`${API_DATASETS_URL}?project_id=${project_id}`, {
-          headers: {
-            Authorization: `Token ${token}`,
-            'ngrok-skip-browser-warning': '69420',
-          },
-        });
-        setDatasets(response.data);
-      } catch (error) {
-        console.error('Error fetching datasets:', error);
-      }
-    };
-
-    const fetchCurrentCredits = async () => {
-      try {
-        const token = getToken();
-        const response = await axios.get(API_CREDITS_URL, {
-          headers: {
-            Authorization: `Token ${token}`,
-            'ngrok-skip-browser-warning': '69420',
-          },
-        });
-        setCurrentCredits(response.data.current_credits);
-      } catch (error) {
-        console.error('Error fetching credits:', error);
-      }
-    };
-
-    fetchBaseModels();
-    fetchTrainingJobs();
-    fetchDatasets();
-    fetchCurrentCredits();
-
-    const intervalId = setInterval(fetchTrainingJobs, 30000);
+    fetchData();
+    const intervalId = setInterval(() => {
+      fetchData();
+    }, 30000);
 
     return () => clearInterval(intervalId);
   }, [project_id]);
 
-  const handleOpenModal = () => setOpenModal(true);
-  const handleCloseModal = () => setOpenModal(false);
-  const handleOpenErrorModal = () => setOpenErrorModal(true);
-  const handleCloseErrorModal = () => setOpenErrorModal(false);
+  const resetForm = () => {
+    setJobName('');
+    setBaseModel('');
+    setDatasetTrain('');
+    setDatasetTest('');
+    setParameters([]);
+    setIsCreating(false);
+    setSubmitDisabled(false);
+    setErrorMessage('');
+  };
+
+  const handleOpenModal = () => {
+    setOpenModal(true);
+    resetForm();
+  };
   
+  const handleCloseModal = () => {
+    setOpenModal(false);
+    resetForm();
+  };
+
+  const handleOpenErrorModal = (message) => {
+    setErrorMessage(message);
+    setOpenErrorModal(true);
+  };
+
+  const handleCloseErrorModal = () => {
+    setOpenErrorModal(false);
+    setErrorMessage('');
+  };
 
   const handleBaseModelChange = async (event) => {
     const selectedModelId = event.target.value;
     setBaseModel(selectedModelId);
-  
+
     if (selectedModelId) {
       try {
         const token = getToken();
@@ -137,54 +128,53 @@ export default function TrainingJobs() {
             'ngrok-skip-browser-warning': '69420',
           },
         });
-  
+
         const rawParameters = response.data.parameters;
-  
-        // Manually parse the Python-like OrderedDict string
         const parsedParameters = rawParameters
-          .replace(/OrderedDict\(\[/, '') // Remove 'OrderedDict(['
-          .replace(/\]\)$/, '') // Remove '])'
-          .split('), (') // Split into individual entries
-          .map((param, index) => {
+          .replace(/OrderedDict\(\[/, '')
+          .replace(/\]\)$/, '')
+          .split('), (')
+          .map(param => {
             const cleanParam = param
-              .replace(/^\(/, '') // Remove '(' at the start of the first parameter
-              .replace(/\)$/, ''); // Remove ')' at the end of the last parameter
+              .replace(/^\(/, '')
+              .replace(/\)$/, '');
             const [name, value] = cleanParam
-              .replace(/[\[\]']/g, '') // Remove brackets and quotes
-              .split(', '); // Split key-value pair
+              .replace(/[\[\]']/g, '')
+              .split(', ');
             return { name: name.trim(), value: value.trim() };
           });
-  
+
         setParameters(parsedParameters);
       } catch (error) {
         console.error('Error fetching model parameters:', error);
-        setParameters([]); // Reset parameters if there is an error
+        setParameters([]);
+        setErrorMessage('Failed to fetch model parameters');
       }
     } else {
-      setParameters([]); // Clear parameters if no model is selected
+      setParameters([]);
     }
   };
-  
-  
-  
-  
+
   const handleParameterChange = (index, event) => {
     const updatedParameters = [...parameters];
     updatedParameters[index].value = event.target.value;
     setParameters(updatedParameters);
   };
 
-  const filteredJobs = jobs.filter((job) =>
-    job.training_job_name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const validateForm = () => {
+    return jobName && baseModel && datasetTrain && datasetTest;
+  };
 
   const handleCreateJob = async () => {
-    if (isCreating) return; // Prevent multiple submissions
+    if (isCreating || submitDisabled || !validateForm()) return;
+    
     setIsCreating(true);
-  
+    setSubmitDisabled(true);
+
     if (currentCredits < 5) {
-      handleOpenErrorModal();
+      handleOpenErrorModal("Insufficient credits to create a new job");
       setIsCreating(false);
+      setSubmitDisabled(false);
       return;
     }
 
@@ -198,34 +188,28 @@ export default function TrainingJobs() {
       parameters: parameters.reduce((acc, param) => {
         acc[param.name] = param.value;
         return acc;
-      }, {}),
+      }, {})
     };
-  
+
     try {
       const token = getToken();
       const response = await axios.post(API_TRAINING_JOBS_URL, newJob, {
         headers: {
           Authorization: `Token ${token}`,
           'ngrok-skip-browser-warning': '69420',
-        },
+        }
       });
-  
+
       if (response.status === 201) {
-        setJobs((prevJobs) => [...prevJobs, response.data]);
+        await fetchData();
         handleCloseModal();
-        setJobName('');
-        setBaseModel('');
-        setDatasetTrain('');
-        setDatasetTest('');
-        setParameters([]);
-      } else {
-        handleOpenErrorModal(`Error: ${response.status}`);
       }
     } catch (error) {
       console.error('Error creating job:', error);
-      handleOpenErrorModal('An unexpected error occurred. Please try again later.');
+      handleOpenErrorModal('Failed to create job. Please try again.');
     } finally {
       setIsCreating(false);
+      setSubmitDisabled(false);
     }
   };
 
@@ -238,14 +222,16 @@ export default function TrainingJobs() {
           'ngrok-skip-browser-warning': '69420',
         },
       });
-      // Filter jobs using the correct identifier
-      setJobs(jobs.filter((job) => job.training_job_id !== jobId));
+      await fetchData();
     } catch (error) {
       console.error('Error deleting job:', error);
+      setErrorMessage('Failed to delete job');
     }
   };
-  
-  
+
+  const filteredJobs = jobs.filter(job => 
+    job.training_job_name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <Box sx={{ padding: '20px', backgroundColor: '#ffffff', minHeight: '100vh' }}>
@@ -303,161 +289,163 @@ export default function TrainingJobs() {
             </TableRow>
           </TableHead>
           <TableBody>
-          {filteredJobs
-            .filter((job) => job.status !== 'terminating') 
-            .map((job, index) => (
-              <TableRow key={index}>
-                <TableCell>{job.training_job_name}</TableCell>
-                <TableCell>{job.model_name}</TableCell>
-                <TableCell>{job.train_dataset_name}</TableCell>
-                <TableCell>{job.test_dataset_name}</TableCell>
-                <TableCell>{job.status}</TableCell>
-                <TableCell>
-                  <IconButton
-                    variant="outlined"
-                    color="error"
-                    onClick={() => handleDeleteJob(job.training_job_id)} 
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            ))}
-        </TableBody>
-
+            {filteredJobs
+              .filter((job) => job.status !== 'terminating')
+              .map((job, index) => (
+                <TableRow key={index}>
+                  <TableCell>{job.training_job_name}</TableCell>
+                  <TableCell>{job.model_name}</TableCell>
+                  <TableCell>{job.train_dataset_name}</TableCell>
+                  <TableCell>{job.test_dataset_name}</TableCell>
+                  <TableCell>{job.status}</TableCell>
+                  <TableCell>
+                    <IconButton
+                      variant="outlined"
+                      color="error"
+                      onClick={() => handleDeleteJob(job.training_job_id)}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))}
+          </TableBody>
         </Table>
       </TableContainer>
 
-     {/* Create Job Modal */}
-<Modal
-  open={openModal}
-  onClose={handleCloseModal}
-  aria-labelledby="modal-title"
-  aria-describedby="modal-description"
->
-  <Box
-    sx={{
-      width: 600,
-      margin: 'auto',
-      marginTop: '100px',
-      padding: '30px',
-      backgroundColor: '#ffffff',
-      borderRadius: '10px',
-      boxShadow: '0px 5px 15px rgba(0,0,0,0.3)',
-      position: 'relative',
-    }}
-  >
-    {/* Close Icon */}
-    <IconButton
-      onClick={handleCloseModal}
-      sx={{
-        position: 'absolute',
-        top: 8,
-        right: 8,
-        color: 'gray',
-      }}
-    >
-      <CloseIcon/>
-    </IconButton>
-
-    <Typography id="modal-title" variant="h6" gutterBottom>
-      Create New Training Job
-    </Typography>
-    <TextField
-      label="Job Name"
-      fullWidth
-      margin="normal"
-      value={jobName}
-      onChange={(e) => setJobName(e.target.value)}
-    />
-
-    <FormControl fullWidth margin="normal">
-      <InputLabel id="base-model-select-label">Base Model</InputLabel>
-      <Select
-        labelId="base-model-select-label"
-        id="base-model-select"
-        value={baseModel}
-        label="Base Model"
-        onChange={handleBaseModelChange}
+      {/* Create Job Modal */}
+      <Modal
+        open={openModal}
+        onClose={handleCloseModal}
+        aria-labelledby="modal-title"
+        aria-describedby="modal-description"
       >
-        {baseModels.map((model) => (
-          <MenuItem key={model.model_id} value={model.model_id}>
-            {model.model_name}
-          </MenuItem>
-        ))}
-      </Select>
-    </FormControl>
+        <Box
+          sx={{
+            width: 600,
+            margin: 'auto',
+            marginTop: '100px',
+            padding: '30px',
+            backgroundColor: '#ffffff',
+            borderRadius: '10px',
+            boxShadow: '0px 5px 15px rgba(0,0,0,0.3)',
+            position: 'relative',
+          }}
+        >
+          <IconButton
+            onClick={handleCloseModal}
+            sx={{
+              position: 'absolute',
+              top: 8,
+              right: 8,
+              color: 'gray',
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
 
-    <FormControl fullWidth margin="normal">
-      <InputLabel id="train-dataset-select-label">Train Dataset</InputLabel>
-      <Select
-        labelId="train-dataset-select-label"
-        id="train-dataset-select"
-        value={datasetTrain}
-        label="Train Dataset"
-        onChange={(e) => setDatasetTrain(e.target.value)}
-      >
-        {datasets.map((dataset) => (
-          <MenuItem key={dataset.dataset_id} value={dataset.dataset_id}>
-            {dataset.dataset_name}
-          </MenuItem>
-        ))}
-      </Select>
-    </FormControl>
+          <Typography id="modal-title" variant="h6" gutterBottom>
+            Create New Training Job
+          </Typography>
 
-    <FormControl fullWidth margin="normal">
-      <InputLabel id="test-dataset-select-label">Test Dataset</InputLabel>
-      <Select
-        labelId="test-dataset-select-label"
-        id="test-dataset-select"
-        value={datasetTest}
-        label="Test Dataset"
-        onChange={(e) => setDatasetTest(e.target.value)}
-      >
-        {datasets.map((dataset) => (
-          <MenuItem key={dataset.dataset_id} value={dataset.dataset_id}>
-            {dataset.dataset_name}
-          </MenuItem>
-        ))}
-      </Select>
-    </FormControl>
+          <TextField
+            label="Job Name"
+            fullWidth
+            margin="normal"
+            value={jobName}
+            onChange={(e) => setJobName(e.target.value)}
+          />
 
-    <Box>
-      {/* Map parameters into a 3-column grid */}
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)', // 3 columns
-          gap: '10px',
-          marginTop: '20px',
-        }}
-      >
-        {Array.isArray(parameters) &&
-          parameters.map((param, index) => (
-            <TextField
-              key={index}
-              label={param.name}
-              value={param.value || ''}
-              onChange={(e) => handleParameterChange(index, e)}
-              fullWidth
-            />
-          ))}
-      </Box>
-    </Box>
+          <FormControl fullWidth margin="normal">
+            <InputLabel id="base-model-select-label">Base Model</InputLabel>
+            <Select
+              labelId="base-model-select-label"
+              id="base-model-select"
+              value={baseModel}
+              label="Base Model"
+              onChange={handleBaseModelChange}
+            >
+              {baseModels.map((model) => (
+                <MenuItem key={model.model_id} value={model.model_id}>
+                  {model.model_name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
 
-    <Button
-      variant="contained"
-      fullWidth
-      onClick={handleCreateJob}
-      sx={{ marginTop: '20px', borderRadius: '20px' }}
-    >
-      Create Job
-    </Button>
-  </Box>
-</Modal>
+          <FormControl fullWidth margin="normal">
+            <InputLabel id="train-dataset-select-label">Train Dataset</InputLabel>
+            <Select
+              labelId="train-dataset-select-label"
+              id="train-dataset-select"
+              value={datasetTrain}
+              label="Train Dataset"
+              onChange={(e) => setDatasetTrain(e.target.value)}
+            >
+              {datasets.map((dataset) => (
+                <MenuItem key={dataset.dataset_id} value={dataset.dataset_id}>
+                  {dataset.dataset_name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
 
+          <FormControl fullWidth margin="normal">
+            <InputLabel id="test-dataset-select-label">Test Dataset</InputLabel>
+            <Select
+              labelId="test-dataset-select-label"
+              id="test-dataset-select"
+              value={datasetTest}
+              label="Test Dataset"
+              onChange={(e) => setDatasetTest(e.target.value)}
+            >
+              {datasets.map((dataset) => (
+                <MenuItem key={dataset.dataset_id} value={dataset.dataset_id}>
+                  {dataset.dataset_name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
 
-      {/* Error Modal for Insufficient Credits */}
+          <Box>
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(3, 1fr)',
+                gap: '10px',
+                marginTop: '20px',
+              }}
+            >
+              {Array.isArray(parameters) &&
+                parameters.map((param, index) => (
+                  <TextField
+                    key={index}
+                    label={param.name}
+                    value={param.value || ''}
+                    onChange={(e) => handleParameterChange(index, e)}
+                    fullWidth
+                  />
+                ))}
+            </Box>
+          </Box>
+
+          <Button
+            variant="contained"
+            fullWidth
+            onClick={handleCreateJob}
+            disabled={isCreating || submitDisabled || !validateForm()}
+            sx={{
+              marginTop: '20px',
+              borderRadius: '20px',
+              opacity: (isCreating || submitDisabled || !validateForm()) ? 0.7 : 1
+            }}
+          >
+            {isCreating ? 'Creating...' : 'Create Job'}
+          </Button>
+        </Box>
+      </Modal>
+
+      {/* Error Modal */}
       <Modal open={openErrorModal} onClose={handleCloseErrorModal}>
         <Box
           sx={{
@@ -473,22 +461,39 @@ export default function TrainingJobs() {
             textAlign: 'center',
           }}
         >
-          <Typography variant="h6" sx={{ marginBottom: '20px' }}>
-            You don't have enough credits to create a new job!
+          <Typography variant="h6" sx={{ marginBottom: '20px', color: '#d32f2f' }}>
+            {errorMessage || "You don't have enough credits to create a new job!"}
           </Typography>
+          {currentCredits < 5 && (
+            <Button
+              variant="contained"
+              color="primary"
+              sx={{
+                width: '100%',
+                borderRadius: '20px',
+                padding: '10px',
+                backgroundColor: '#1976d2',
+                '&:hover': {
+                  backgroundColor: '#115293',
+                },
+              }}
+              href="https://calendly.com/vivek-vijaya/30min"
+              target="_blank"
+            >
+              Add Credits
+            </Button>
+          )}
           <Button
-            variant="contained"
-            color="primary"
+            variant="outlined"
+            onClick={handleCloseErrorModal}
             sx={{
               width: '100%',
               borderRadius: '20px',
               padding: '10px',
-              backgroundColor: '#1976d2',
+              marginTop: '10px',
             }}
-            href="https://calendly.com/vivek-vijaya/30min"
-            target="_blank"
           >
-            Add Credits
+            Close
           </Button>
         </Box>
       </Modal>

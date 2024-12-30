@@ -21,8 +21,8 @@ import {
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 
-const BASE_MODEL_API = `${import.meta.env.VITE_HOST_URL}/basemodels/`;
-const DEPLOYMENT_API = `${import.meta.env.VITE_HOST_URL}/deployments/`;
+const BASE_MODEL_API = `${import.meta.env.VITE_HOST_URL}/tuning/basemodels/`;
+const DEPLOYMENT_API = `${import.meta.env.VITE_HOST_URL}/tuning/deployments/`;
 
 export default function Status() {
   const { project_id } = useParams();
