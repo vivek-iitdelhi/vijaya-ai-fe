@@ -17,8 +17,8 @@ import SearchIcon from "@mui/icons-material/Search";
 import axios from "axios";
 import { useParams } from "react-router-dom"; // Import useParams for capturing URL params
 
-const API_MODEL_ARTIFACTS = `${import.meta.env.VITE_HOST_URL}/modelartifacts/`;
-const API_DEPLOY = `${import.meta.env.VITE_HOST_URL}/deployments/`;
+const API_MODEL_ARTIFACTS = `${import.meta.env.VITE_HOST_URL}/tuning/modelartifacts/`;
+const API_DEPLOY = `${import.meta.env.VITE_HOST_URL}/tuning/deployments/`;
 
 const ModelArtifactsTable = () => {
   const { project_id } = useParams(); // Get project_id from the URL

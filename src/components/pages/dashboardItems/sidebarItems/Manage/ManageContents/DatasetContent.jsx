@@ -23,7 +23,7 @@ import { Delete as DeleteIcon, Add as AddIcon, UploadFile as UploadFileIcon } fr
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
 
-const API_BASE_URL = `${import.meta.env.VITE_HOST_URL}/datasets/`;
+const API_BASE_URL = `${import.meta.env.VITE_HOST_URL}/tuning/datasets/`;
 const getToken = () => localStorage.getItem('authToken');
 
 const isValidFileType = (file) => {

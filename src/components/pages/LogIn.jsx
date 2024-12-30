@@ -21,8 +21,8 @@ const LogIn = ({ onSuccess }) => {
   async function handleSubmit(e) {
     e.preventDefault();
     const url = isLogin
-      ? `${import.meta.env.VITE_HOST_URL}/login/`
-      : `${import.meta.env.VITE_HOST_URL}/register/`;
+      ? `${import.meta.env.VITE_HOST_URL}/tuning/login/`
+      : `${import.meta.env.VITE_HOST_URL}/tuning/register/`;
 
     try {
       const response = await fetch(url, {

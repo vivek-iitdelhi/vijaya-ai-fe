@@ -26,10 +26,10 @@ import CloseIcon from '@mui/icons-material/Close';
 import IconButton from '@mui/material/IconButton';
 
 const getToken = () => localStorage.getItem('authToken');
-const API_BASE_URL = `${import.meta.env.VITE_HOST_URL}/basemodels/`;
-const API_TRAINING_JOBS_URL = `${import.meta.env.VITE_HOST_URL}/trainingjobs/`;
-const API_DATASETS_URL = `${import.meta.env.VITE_HOST_URL}/datasets/`;
-const API_CREDITS_URL = `${import.meta.env.VITE_HOST_URL}/credits/`;
+const API_BASE_URL = `${import.meta.env.VITE_HOST_URL}/tuning/basemodels/`;
+const API_TRAINING_JOBS_URL = `${import.meta.env.VITE_HOST_URL}/tuning/trainingjobs/`;
+const API_DATASETS_URL = `${import.meta.env.VITE_HOST_URL}/tuning/datasets/`;
+const API_CREDITS_URL = `${import.meta.env.VITE_HOST_URL}/tuning/credits/`;
 
 export default function TrainingJobs() {
   const { project_id } = useParams();
