@@ -36,7 +36,7 @@ const Navbar = () => {
       try {
         const token = getToken(); 
 
-        const response = await fetch(`${import.meta.env.VITE_HOST_URL}/credits/`, {
+        const response = await fetch(`${import.meta.env.VITE_HOST_URL}/tuning/credits/`, {
           headers: {
             Authorization: `Token ${token}`,
             "ngrok-skip-browser-warning": "69420"
