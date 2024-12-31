@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Button,
@@ -23,52 +23,91 @@ import {
 import SearchIcon from "@mui/icons-material/Search";
 import { motion } from "framer-motion";
 
+const API_BASE_URL = `${import.meta.env.VITE_HOST_URL}/rag/embeddingsjobs/`;
+const BASE_MODELS_URL = `${import.meta.env.VITE_HOST_URL}/tuning/basemodels/`;
+
+const getToken = () => {
+  return localStorage.getItem("authToken");
+};
+
 export default function EmbeddingJobs() {
+  const [jobs, setJobs] = useState([]);
+  const [baseModels, setBaseModels] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedBaseModel, setSelectedBaseModel] = useState("");
-  
-  // Dummy data
-  const jobs = [
-    {
-      id: 1,
-      job_name: "Job 1",
-      base_model: "Model A",
-      dataset_version: "Dataset1_v1.0",
-      status: "Completed",
-    },
-    {
-      id: 2,
-      job_name: "Job 2",
-      base_model: "Model B",
-      dataset_version: "Dataset2_v2.1",
-      status: "In Progress",
-    },
-    {
-      id: 3,
-      job_name: "Job 3",
-      base_model: "Model C",
-      dataset_version: "Dataset3_v3.5",
-      status: "Failed",
-    },
-  ];
 
-  const baseModels = ["Model A", "Model B", "Model C", "Model D"];
+  useEffect(() => {
+    fetchJobs();
+    fetchBaseModels();
+  }, []);
+
+  const fetchJobs = async () => {
+    try {
+      const token = getToken();
+      const response = await fetch(API_BASE_URL, {
+        method: "GET",
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error("Failed to fetch jobs.");
+      }
+      const data = await response.json();
+      setJobs(data);
+    } catch (error) {
+      console.error("Error fetching jobs:", error);
+    }
+  };
+
+  const fetchBaseModels = async () => {
+    try {
+      const token = getToken();
+      const response = await fetch(BASE_MODELS_URL, {
+        method: "GET",
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error("Failed to fetch base models.");
+      }
+      const data = await response.json();
+      setBaseModels(data);
+    } catch (error) {
+      console.error("Error fetching base models:", error);
+    }
+  };
+
+  const handleCreateEmbeddingJob = async () => {
+    try {
+      const token = getToken();
+      const response = await fetch(API_BASE_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Token ${token}`,
+        },
+        body: JSON.stringify({
+          embeddings_job_name: `Job_${Date.now()}`,
+          model_id: selectedBaseModel,
+        }),
+      });
+      if (!response.ok) {
+        throw new Error("Failed to create embedding job.");
+      }
+      const newJob = await response.json();
+      setJobs((prevJobs) => [...prevJobs, newJob]);
+      setOpenDialog(false);
+    } catch (error) {
+      console.error("Error creating embedding job:", error);
+    }
+  };
 
   const filteredJobs = jobs.filter((job) =>
-    job.job_name.toLowerCase().includes(searchQuery.toLowerCase())
+    job.embeddings_job_name.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
-  const handleUpdate = (jobId) => {
-    console.log(`Update job with ID: ${jobId}`);
-    // Add logic for updating job status or configuration
-  };
-
-  const handleCreateEmbeddingJob = () => {
-    console.log("Creating new embedding job with base model:", selectedBaseModel);
-    // Add logic for creating a new embedding job
-    setOpenDialog(false);  // Close the dialog after creating
-  };
 
   return (
     <Box sx={{ padding: "20px", backgroundColor: "#ffffff", minHeight: "100vh" }}>
@@ -94,16 +133,16 @@ export default function EmbeddingJobs() {
           sx={{
             width: "30%",
             backgroundColor: "#fff",
-            borderRadius: "20px", // Curvy search input
-            padding: "4px 10px",  // Smoother input field
+            borderRadius: "20px",
+            padding: "4px 10px",
           }}
         />
 
         <Button
           variant="contained"
           sx={{
-            borderRadius: "30px",  // Curvy button
-            padding: "12px 30px",  // Larger button padding
+            borderRadius: "30px",
+            padding: "12px 30px",
             "&:hover": {
               backgroundColor: "#5a2387",
             },
@@ -117,7 +156,7 @@ export default function EmbeddingJobs() {
       <TableContainer
         component={Paper}
         sx={{
-          borderRadius: "16px",  // Curvy table container
+          borderRadius: "16px",
           boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
           maxHeight: "620px",
           overflowY: "auto",
@@ -133,37 +172,16 @@ export default function EmbeddingJobs() {
                 Base Model
               </TableCell>
               <TableCell sx={{ fontWeight: "bold", backgroundColor: "#3f51b5", color: "#fff" }}>
-                DatasetVersion
-              </TableCell>
-              <TableCell sx={{ fontWeight: "bold", backgroundColor: "#3f51b5", color: "#fff" }}>
                 Status
-              </TableCell>
-              <TableCell sx={{ fontWeight: "bold", backgroundColor: "#3f51b5", color: "#fff" }}>
-                Action
               </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {filteredJobs.map((job) => (
-              <TableRow key={job.id}>
-                <TableCell>{job.job_name}</TableCell>
-                <TableCell>{job.base_model}</TableCell>
-                <TableCell>{job.dataset_version}</TableCell>
+              <TableRow key={job.embeddings_job_id}>
+                <TableCell>{job.embeddings_job_name}</TableCell>
+                <TableCell>{job.model_id}</TableCell>
                 <TableCell>{job.status}</TableCell>
-                <TableCell>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    sx={{
-                      borderRadius: "20px",
-                      textTransform: "none",
-                      fontWeight: "bold",
-                    }}
-                    onClick={() => handleUpdate(job.id)}
-                  >
-                    Update
-                  </Button>
-                </TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -176,9 +194,9 @@ export default function EmbeddingJobs() {
         onClose={() => setOpenDialog(false)}
         sx={{
           "& .MuiDialog-paper": {
-            borderRadius: "20px",  // Curvier dialog box
-            width: "500px",  // Make the dialog larger
-            padding: "20px", // Add more padding to make it feel spacious
+            borderRadius: "20px",
+            width: "500px",
+            padding: "20px",
           },
         }}
       >
@@ -194,13 +212,13 @@ export default function EmbeddingJobs() {
                 onChange={(e) => setSelectedBaseModel(e.target.value)}
                 label="Select Base Model"
                 sx={{
-                  borderRadius: "20px", // Curvier select box
-                  padding: "12px 16px", // Larger padding
+                  borderRadius: "20px",
+                  padding: "12px 16px",
                 }}
               >
                 {baseModels.map((model, index) => (
-                  <MenuItem key={index} value={model}>
-                    {model}
+                  <MenuItem key={index} value={model.model_id}>
+                    {model.model_name}
                   </MenuItem>
                 ))}
               </Select>
@@ -209,8 +227,8 @@ export default function EmbeddingJobs() {
         </DialogContent>
         <DialogActions
           sx={{
-            justifyContent: "center",  // Center the buttons
-            padding: "20px",  // Add more padding for a spacious feel
+            justifyContent: "center",
+            padding: "20px",
           }}
         >
           <Button onClick={() => setOpenDialog(false)} color="secondary" sx={{ borderRadius: "20px" }}>
@@ -228,7 +246,7 @@ export default function EmbeddingJobs() {
               color="primary"
               sx={{
                 borderRadius: "20px",
-                padding: "12px 30px",  // Larger padding for buttons
+                padding: "12px 30px",
                 fontWeight: "bold",
               }}
             >

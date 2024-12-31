@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 import {
   Button,
   TextField,
@@ -15,59 +16,91 @@ import {
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 
-export default function ProjectDetailPageRAG() {
-  const [projects, setProjects] = useState([
-    {
-      project_id: 1,
-      project_name: "RAG Project 1",
-      description: "A sample RAG project description",
-      datasetCount: 5,
-      trainingJobs: 2,
-      services: 1,
+const API_BASE_URL = `${import.meta.env.VITE_HOST_URL}/rag/projects/`;
+const DATASET_API_URL = `${import.meta.env.VITE_HOST_URL}/rag/datasets/`;
+
+const getToken = () => {
+  return localStorage.getItem('authToken');
+};
+
+const fetchProjects = async () => {
+  const token = getToken();
+  try {
+    const projectResponse = await axios.get(API_BASE_URL, {
+      headers: {
+        Authorization: `Token ${token}`,
+        "ngrok-skip-browser-warning": "69420"
+      },
+    });
+
+    const projects = projectResponse.data;
+
+    if (!Array.isArray(projects)) {
+      throw new Error('Expected an array of projects');
+    }
+
+    const projectsWithDatasetCount = await Promise.all(
+      projects.map(async (project) => {
+        const datasetResponse = await axios.get(`${DATASET_API_URL}?project_id=${project.project_id}`, {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        });
+        return {
+          ...project,
+          datasetCount: datasetResponse.data.length,
+          trainingJobs: 0,
+          services: 0,
+        };
+      })
+    );
+
+    return projectsWithDatasetCount;
+  } catch (error) {
+    console.error('Error fetching projects:', error);
+    return [];
+  }
+};
+
+const addProject = async (projectData) => {
+  const token = getToken();
+  const response = await axios.post(API_BASE_URL, projectData, {
+    headers: {
+      Authorization: `Token ${token}`,
     },
-    {
-      project_id: 2,
-      project_name: "RAG Project 2",
-      description: "Another RAG project description",
-      datasetCount: 3,
-      trainingJobs: 1,
-      services: 2,
+  });
+  return response.data;
+};
+
+const removeProject = async (project_id) => {
+  const token = getToken();
+  await axios.delete(`${API_BASE_URL}${project_id}/`, {
+    headers: {
+      Authorization: `Token ${token}`,
     },
-    {
-        project_id: 2,
-        project_name: "RAG Project 2",
-        description: "Another RAG project description",
-        datasetCount: 3,
-        trainingJobs: 1,
-        services: 2,
-      },
-      {
-        project_id: 2,
-        project_name: "RAG Project 2",
-        description: "Another RAG project description",
-        datasetCount: 3,
-        trainingJobs: 1,
-        services: 2,
-      },
-      {
-        project_id: 2,
-        project_name: "RAG Project 2",
-        description: "Another RAG project description",
-        datasetCount: 3,
-        trainingJobs: 1,
-        services: 2,
-      },
-      
-  ]);
+  });
+};
+
+export default function ProjectDetailPage() {
+  const [projects, setProjects] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [newProject, setNewProject] = useState({ project_name: '', description: '' });
   const [openModal, setOpenModal] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();
 
-  const handleAddProject = () => {
-    const newId = projects.length + 1;
-    const addedProject = { ...newProject, project_id: newId, datasetCount: 0, trainingJobs: 0, services: 0 };
+  useEffect(() => {
+    async function loadProjects() {
+      setIsLoading(true);
+      const data = await fetchProjects();
+      setProjects(data);
+      setIsLoading(false);
+    }
+    loadProjects();
+  }, []);
+
+  const handleAddProject = async () => {
+    const addedProject = await addProject(newProject);
     setProjects([...projects, addedProject]);
     setNewProject({ project_name: '', description: '' });
     setOpenModal(false);
@@ -77,7 +110,8 @@ export default function ProjectDetailPageRAG() {
     navigate(`/rag/manage/${project_id}`);
   };
 
-  const handleDeleteProject = (project_id) => {
+  const handleDeleteProject = async (project_id) => {
+    await removeProject(project_id);
     setProjects((prevProjects) => prevProjects.filter((project) => project.project_id !== project_id));
   };
 
@@ -92,7 +126,7 @@ export default function ProjectDetailPageRAG() {
         {/* Main title */}
         <Box sx={{ padding: '5px 8px', borderBottom: '1px solid #ddd' }}>
           <Typography variant="h4" component="h1">
-            RAG Dashboard
+            RAG Project Dashboard
           </Typography>
         </Box>
 

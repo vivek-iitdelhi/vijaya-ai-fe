@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Button,
@@ -13,6 +13,7 @@ import {
   Paper,
   Typography,
 } from '@mui/material';
+import axios from 'axios';
 
 const Status = () => {
   const [embeddingVersion, setEmbeddingVersion] = useState('');
@@ -20,36 +21,84 @@ const Status = () => {
   const [fineTunedProject, setFineTunedProject] = useState('');
   const [llmOption, setLlmOption] = useState('');
   const [generatorName, setGeneratorName] = useState('');
+  const [embeddingTableData, setEmbeddingTableData] = useState([]);
+  const [fineTunedTableData, setFineTunedTableData] = useState([]);
+  const [deploymentsData, setDeploymentsData] = useState([]);
 
-  // Dummy data for dropdowns
-  const embeddingsVersions = ['1', '2', '3', '4', '5'];
-  const fineTunedProjects = ['Project A', 'Project B', 'Project C', 'Project D', 'Project E'];
+  // LLM options dropdown data
   const llmOptions = ['LLM Model 1', 'LLM Model 2', 'LLM Model 3', 'LLM Model 4', 'LLM Model 5'];
 
-  const embeddingTableData = [
-    { id: 1, deploymentId: 'D-001', deploymentName: 'Deployment 1', status: 'Active' },
-    { id: 2, deploymentId: 'D-002', deploymentName: 'Deployment 2', status: 'Pending' },
-    { id: 3, deploymentId: 'D-003', deploymentName: 'Deployment 3', status: 'Completed' },
-    { id: 4, deploymentId: 'D-004', deploymentName: 'Deployment 4', status: 'Failed' },
-    { id: 5, deploymentId: 'D-005', deploymentName: 'Deployment 5', status: 'Active' },
-  ];
+  const apiBaseUrl = import.meta.env.VITE_HOST_URL;
+  const token = localStorage.getItem('authToken'); // Assuming auth token is stored in localStorage
 
-  const fineTunedTableData = [
-    { id: 1, deploymentId: 'D-006', deploymentName: 'FineTuned Deployment 1', status: 'Completed' },
-    { id: 2, deploymentId: 'D-007', deploymentName: 'FineTuned Deployment 2', status: 'In Progress' },
-    { id: 3, deploymentId: 'D-008', deploymentName: 'FineTuned Deployment 3', status: 'Active' },
-    { id: 4, deploymentId: 'D-009', deploymentName: 'FineTuned Deployment 4', status: 'Pending' },
-  ];
+  // Fetch Embedding Versions and Fine-Tuned Projects
+  useEffect(() => {
+    // Fetch Embedding Versions
+    axios
+      .get(`${apiBaseUrl}/rag/embedding-deployments/`, {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      })
+      .then((response) => {
+        setEmbeddingTableData(response.data);
+        setEmbeddingVersion(response.data[0]?.version_name); // Set default version name
+      })
+      .catch((error) => console.error('Error fetching embedding versions:', error));
+
+    // Fetch Fine-Tuned Projects with Completed Status
+    axios
+      .get(`${apiBaseUrl}/tuning/trainingjobs/`, {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      })
+      .then((response) => {
+        const completedProjects = response.data.filter(
+          (job) => job.status === 'completed'
+        );
+        setFineTunedTableData(completedProjects);
+      })
+      .catch((error) => console.error('Error fetching fine-tuned projects:', error));
+
+    // Fetch Deployments (embedding version deployments)
+    axios
+      .get(`${apiBaseUrl}/rag/embeddings-deploy/`, {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      })
+      .then((response) => setDeploymentsData(response.data))
+      .catch((error) => console.error('Error fetching deployments:', error));
+  }, [token, apiBaseUrl]);
 
   const handleDeploy = () => {
-    console.log('Deploying...');
-    // Add deploy logic here
+    axios
+      .post(
+        `${apiBaseUrl}/rag/embedding-deployments/POST`, 
+        {
+          version_name: embeddingVersion,
+          embedding_name: embeddingName,
+        },
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        }
+      )
+      .then((response) => {
+        console.log('Deployment successful', response.data);
+        // Optionally, update the deployment table or handle the response
+      })
+      .catch((error) => {
+        console.error('Error deploying embedding:', error);
+      });
   };
 
   return (
     <Box sx={{ padding: '2px', backgroundColor: '#f5f5f5', minHeight: '100vh' }}>
       {/* Upper Half Section */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', marginBottom: '30px' }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', marginBottom: '120px' }}>
         {/* Left Side */}
         <Box sx={{ width: '35%' }}>
           <Typography variant="h6" gutterBottom sx={{ textAlign: 'center' }}>
@@ -60,7 +109,7 @@ const Status = () => {
           <Autocomplete
             value={embeddingVersion}
             onChange={(e, newValue) => setEmbeddingVersion(newValue)}
-            options={embeddingsVersions}
+            options={embeddingTableData.map((item) => item.version_name)}
             renderInput={(params) => <TextField {...params} label="Select Embedding Version" />}
             sx={{ marginBottom: '20px' }}
             disableClearable
@@ -124,7 +173,7 @@ const Status = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {embeddingTableData.map((data) => (
+                {deploymentsData.map((data) => (
                   <TableRow key={data.id}>
                     <TableCell>{data.deploymentId}</TableCell>
                     <TableCell>{data.deploymentName}</TableCell>
@@ -149,7 +198,7 @@ const Status = () => {
           <Autocomplete
             value={fineTunedProject}
             onChange={(e, newValue) => setFineTunedProject(newValue)}
-            options={fineTunedProjects}
+            options={fineTunedTableData.map((item) => item.project_name)}
             renderInput={(params) => <TextField {...params} label="Fine-Tuned Projects" />}
             sx={{ marginBottom: '20px' }}
             disableClearable
@@ -163,7 +212,7 @@ const Status = () => {
             value={llmOption}
             onChange={(e, newValue) => setLlmOption(newValue)}
             options={llmOptions}
-            renderInput={(params) => <TextField {...params} label="Generator LLM " />}
+            renderInput={(params) => <TextField {...params} label="Generator LLM" />}
             sx={{ marginBottom: '20px' }}
             disableClearable
             ListboxProps={{
@@ -171,7 +220,7 @@ const Status = () => {
             }}
           />
 
-          {/* Deployment Name and Deploy button */}
+          {/* Generator Name and Deploy button */}
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
             <TextField
               label="Generator Name"
