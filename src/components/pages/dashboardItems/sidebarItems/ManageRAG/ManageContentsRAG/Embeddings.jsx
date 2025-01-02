@@ -22,6 +22,7 @@ import {
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import { motion } from "framer-motion";
+import { useParams } from "react-router-dom"; // Import useParams
 
 const API_BASE_URL = `${import.meta.env.VITE_HOST_URL}/rag/embeddingsjobs/`;
 const BASE_MODELS_URL = `${import.meta.env.VITE_HOST_URL}/tuning/basemodels/`;
@@ -31,11 +32,13 @@ const getToken = () => {
 };
 
 export default function EmbeddingJobs() {
+  const { project_id } = useParams(); // Get project_id from URL
   const [jobs, setJobs] = useState([]);
   const [baseModels, setBaseModels] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedBaseModel, setSelectedBaseModel] = useState("");
+  const [jobName, setJobName] = useState(""); 
 
   useEffect(() => {
     fetchJobs();
@@ -90,8 +93,9 @@ export default function EmbeddingJobs() {
           Authorization: `Token ${token}`,
         },
         body: JSON.stringify({
-          embeddings_job_name: `Job_${Date.now()}`,
+          embeddings_job_name: jobName, // Use the job name from the state
           model_id: selectedBaseModel,
+          project_id: project_id, // Include project_id from URL
         }),
       });
       if (!response.ok) {
@@ -100,6 +104,8 @@ export default function EmbeddingJobs() {
       const newJob = await response.json();
       setJobs((prevJobs) => [...prevJobs, newJob]);
       setOpenDialog(false);
+      setJobName(""); // Reset job name after creation
+      setSelectedBaseModel(""); // Reset selected base model after creation
     } catch (error) {
       console.error("Error creating embedding job:", error);
     }
@@ -200,11 +206,27 @@ export default function EmbeddingJobs() {
           },
         }}
       >
-        <DialogTitle sx={{ textAlign: "center", fontWeight: "bold" }}>
-          Select BaseModel
+        <DialogTitle sx={{ textAlign: "center", fontWeight: "bold", fontSize: "1.5rem" }}>
+          Create New Embedding Job
         </DialogTitle>
         <DialogContent>
           <Box sx={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+          <TextField
+                label="Name"
+                variant="outlined"
+                value={jobName}
+                onChange={(e) => setJobName(e.target.value)} 
+                sx={{
+                  
+                  padding: "12px 16px", // Padding inside the TextField
+                 
+                  '& .MuiInputBase-input': {
+                    height: '3em', // Adjust height of the input text
+                    padding: '10px 14px', // Adjust padding for the input text
+                  },
+                  width: '100%', // Make it full width
+                }}
+              />
             <FormControl fullWidth>
               <InputLabel>Select Base Model</InputLabel>
               <Select

@@ -24,6 +24,7 @@ const Status = () => {
   const [embeddingTableData, setEmbeddingTableData] = useState([]);
   const [fineTunedTableData, setFineTunedTableData] = useState([]);
   const [deploymentsData, setDeploymentsData] = useState([]);
+  const [llmArtifacts, setLlmArtifacts] = useState([]);
 
   // LLM options dropdown data
   const llmOptions = ['LLM Model 1', 'LLM Model 2', 'LLM Model 3', 'LLM Model 4', 'LLM Model 5'];
@@ -46,18 +47,15 @@ const Status = () => {
       })
       .catch((error) => console.error('Error fetching embedding versions:', error));
 
-    // Fetch Fine-Tuned Projects with Completed Status
+    // Fetch Fine-Tuned Projects
     axios
-      .get(`${apiBaseUrl}/tuning/trainingjobs/`, {
+      .get(`${apiBaseUrl}/tuning/projects/`, {
         headers: {
           Authorization: `Token ${token}`,
         },
       })
       .then((response) => {
-        const completedProjects = response.data.filter(
-          (job) => job.status === 'completed'
-        );
-        setFineTunedTableData(completedProjects);
+        setFineTunedTableData(response.data); // Set all projects
       })
       .catch((error) => console.error('Error fetching fine-tuned projects:', error));
 
@@ -71,6 +69,25 @@ const Status = () => {
       .then((response) => setDeploymentsData(response.data))
       .catch((error) => console.error('Error fetching deployments:', error));
   }, [token, apiBaseUrl]);
+
+  // Fetch LLM Artifacts when a fine-tuned project is selected
+  useEffect(() => {
+    if (fineTunedProject) {
+      const selectedProject = fineTunedTableData.find(project => project.project_name === fineTunedProject);
+      if (selectedProject) {
+        axios
+          .get(`${apiBaseUrl}/tuning/modelartifacts/?project_id=${selectedProject.project_id}`, {
+            headers: {
+              Authorization: `Token ${token}`,
+            },
+          })
+          .then((response) => {
+            setLlmArtifacts(response.data); // Set artifacts related to the selected project
+          })
+          .catch((error) => console.error('Error fetching LLM artifacts:', error));
+      }
+    }
+  }, [fineTunedProject, fineTunedTableData, token, apiBaseUrl]);
 
   const handleDeploy = () => {
     axios
@@ -211,7 +228,7 @@ const Status = () => {
           <Autocomplete
             value={llmOption}
             onChange={(e, newValue) => setLlmOption(newValue)}
-            options={llmOptions}
+            options={llmArtifacts.map((artifact) => artifact.artifact_name)} // Assuming artifact has a name property
             renderInput={(params) => <TextField {...params} label="Generator LLM" />}
             sx={{ marginBottom: '20px' }}
             disableClearable
