@@ -97,7 +97,7 @@ export default function EmbeddingJobs() {
         body: JSON.stringify({
           embeddings_job_name: jobName, // Use the job name from the state
           model_id: selectedBaseModel,
-          project_id: projectId, // Use projectId as number
+          project_id: project_id, 
         }),
       });
       if (!response.ok) {
@@ -105,7 +105,7 @@ export default function EmbeddingJobs() {
       }
       const newJob = await response.json();
       // Check if the new job's project_id matches before adding
-      if (newJob.project_id === projectId) {
+      if (newJob.project_id === project_id) {
         setJobs((prevJobs) => [...prevJobs, newJob]);
       }
       setOpenDialog(false);
