@@ -191,7 +191,7 @@ export default function EmbeddingJobs() {
             {filteredJobs.map((job) => (
               <TableRow key={job.embeddings_job_id}>
                 <TableCell>{job.embeddings_job_name}</TableCell>
-                <TableCell>{job.model_id}</TableCell>
+                <TableCell>{job.model_name}</TableCell>
                 <TableCell>{job.status}</TableCell>
               </TableRow>
             ))}
