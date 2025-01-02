@@ -22,7 +22,7 @@ import {
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import { motion } from "framer-motion";
-import { useParams } from "react-router-dom"; // Import useParams
+import { useParams } from "react-router-dom";
 
 const API_BASE_URL = `${import.meta.env.VITE_HOST_URL}/rag/embeddingsjobs/`;
 const BASE_MODELS_URL = `${import.meta.env.VITE_HOST_URL}/tuning/basemodels/`;
@@ -58,7 +58,9 @@ export default function EmbeddingJobs() {
         throw new Error("Failed to fetch jobs.");
       }
       const data = await response.json();
-      setJobs(data);
+      // Filter data to include only jobs with matching project_id
+      const filteredData = data.filter((job) => job.project_id === project_id);
+      setJobs(filteredData);
     } catch (error) {
       console.error("Error fetching jobs:", error);
     }
@@ -95,14 +97,17 @@ export default function EmbeddingJobs() {
         body: JSON.stringify({
           embeddings_job_name: jobName, // Use the job name from the state
           model_id: selectedBaseModel,
-          project_id: project_id, // Include project_id from URL
+          project_id: projectId, // Use projectId as number
         }),
       });
       if (!response.ok) {
         throw new Error("Failed to create embedding job.");
       }
       const newJob = await response.json();
-      setJobs((prevJobs) => [...prevJobs, newJob]);
+      // Check if the new job's project_id matches before adding
+      if (newJob.project_id === projectId) {
+        setJobs((prevJobs) => [...prevJobs, newJob]);
+      }
       setOpenDialog(false);
       setJobName(""); // Reset job name after creation
       setSelectedBaseModel(""); // Reset selected base model after creation
