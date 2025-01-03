@@ -48,7 +48,7 @@ export default function EmbeddingJobs() {
   const fetchJobs = async () => {
     try {
       const token = getToken();
-      const response = await fetch(API_BASE_URL, {
+      const response = await fetch(`${API_BASE_URL}?project_id=${project_id}`, {
         method: "GET",
         headers: {
           Authorization: `Token ${token}`,
@@ -59,7 +59,6 @@ export default function EmbeddingJobs() {
       }
       const data = await response.json();
       // Filter data to include only jobs with matching project_id
-      const filteredData = data.filter((job) => job.project_id === project_id);
       setJobs(filteredData);
     } catch (error) {
       console.error("Error fetching jobs:", error);
